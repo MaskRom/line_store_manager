@@ -141,7 +141,8 @@ const EventHandler = {
             return;
         }
 
-        const storeUrl = `${Settings.FRONTEND_BASE_URL}?page=admin`;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const storeUrl = `${baseUrl}/admin.html`;
 
         const flexMessage = {
             type: 'flex',
@@ -190,7 +191,8 @@ const EventHandler = {
     handleStaffSettings: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
-        const registrationUrl = `${Settings.FRONTEND_BASE_URL}?page=register`;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const registrationUrl = `${baseUrl}/register.html`;
 
         const flexMessage = {
             type: 'flex',
@@ -258,7 +260,8 @@ const EventHandler = {
     handleShiftRequest: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
-        const shiftUrl = `${Settings.FRONTEND_BASE_URL}?page=shift`;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const shiftUrl = `${baseUrl}/shift.html`;
 
         const flexMessage = {
             type: 'flex',
@@ -320,7 +323,8 @@ const EventHandler = {
     handleShiftEdit: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
-        const shiftEditUrl = `${Settings.FRONTEND_BASE_URL}?page=shiftEdit`;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const shiftEditUrl = `${baseUrl}/shiftEdit.html`;
 
         const flexMessage = {
             type: 'flex',
@@ -394,7 +398,8 @@ const EventHandler = {
             }
 
             // 友だち追加のウェルカムメッセージ(Flex Message)
-            const registrationUrl = `${Settings.FRONTEND_BASE_URL}?page=register`;
+            const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+            const registrationUrl = `${baseUrl}/register.html`;
             Utils.log(`INFO: Registration URL generated: ${registrationUrl}`);
 
             const flexMessage = {
