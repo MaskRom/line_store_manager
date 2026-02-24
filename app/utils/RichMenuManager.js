@@ -10,7 +10,9 @@ const RichMenuManager = {
     // メニュー設定 (動的にURLを取得するためgetterを使用)
     get CONFIGS() {
         // 設定されたフロントエンドベースURL (LIFF URL優先) を取得
-        const baseUrl = Settings.FRONTEND_BASE_URL;
+        // 末尾のスラッシュを取り除く（二重スラッシュ防止）
+        const baseUrlRaw = Settings.FRONTEND_BASE_URL || "";
+        const baseUrl = baseUrlRaw.replace(/\/$/, '');
 
         return {
             2: {
@@ -19,9 +21,9 @@ const RichMenuManager = {
                 name: "Menu_Staff",
                 chatBarText: "メニュー",
                 areas: [
-                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=register` } },
-                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shift` } },
-                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shiftEdit` } }
+                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/register.html` } },
+                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shift.html` } },
+                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html` } }
                 ]
             },
             3: {
@@ -30,9 +32,9 @@ const RichMenuManager = {
                 name: "Menu_Manager",
                 chatBarText: "管理者メニュー",
                 areas: [
-                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=register` } },
-                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=admin` } },
-                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shiftEdit` } }
+                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/register.html` } },
+                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/admin.html` } },
+                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html` } }
                 ]
             },
             4: {
@@ -41,11 +43,11 @@ const RichMenuManager = {
                 name: "Menu_Admin",
                 chatBarText: "管理メニュー",
                 areas: [
-                    { bounds: { x: 0, y: 0, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=register` } },
+                    { bounds: { x: 0, y: 0, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}/register.html` } },
                     // "店舗追加・削除" は専用LIFFページが無く現状メッセージトリガーのためそのままにする
                     { bounds: { x: 600, y: 0, width: 600, height: 405 }, action: { type: "message", text: "店舗追加・削除" } },
-                    { bounds: { x: 0, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=admin` } },
-                    { bounds: { x: 600, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shiftEdit` } }
+                    { bounds: { x: 0, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}/admin.html` } },
+                    { bounds: { x: 600, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html` } }
                 ]
             }
         };
