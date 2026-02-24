@@ -271,6 +271,8 @@ function setupTriggers() {
 function setupRichMenus() {
     Logger.log("--- リッチメニュー構築 ---");
     try {
+        // 古い設定が残っている場合を考慮し、必ずリセットしてから作り直す
+        RichMenuManager.resetAll();
         RichMenuManager.init();
     } catch (e) {
         Logger.log(`ERROR: Failed to initialize Rich Menus - ${e}`);
