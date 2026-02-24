@@ -19,6 +19,9 @@ function setup() {
         // 3. リッチメニュー初期化
         setupRichMenus();
 
+        // 4. GitHubへデプロイリクエスト送信 (設定がある場合のみ)
+        triggerGitHubDeploy();
+
         Logger.log("✅ セットアップが完了しました。");
         Logger.log("⚠️ 注意: スクリプトプロパティに値（ACCESS_TOKEN等）を設定してください。");
 
@@ -327,4 +330,49 @@ function diagnoseRichMenus() {
     triggers.forEach(t => Logger.log(`- ${t.getHandlerFunction()} (${t.getEventType()})`));
 
     Logger.log("=== 診断終了 ===");
+}
+
+/**
+ * GitHub Actions（フロントエンドデプロイ）をキックする
+ */
+function triggerGitHubDeploy() {
+    Logger.log("--- GitHubデプロイリクエスト送信 ---");
+    const token = Settings.GITHUB_TOKEN;
+    const repo = Settings.GITHUB_REPO;
+
+    if (!token || !repo) {
+        Logger.log("ℹ️ GITHUB_TOKEN または GITHUB_REPO が未設定のため、デプロイアクションをスキップします。");
+        return;
+    }
+
+    const url = `https://api.github.com/repos/${repo}/dispatches`;
+    const payload = {
+        event_type: "deploy_frontend"
+    };
+
+    const options = {
+        method: "post",
+        headers: {
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": "token " + token
+        },
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(url, options);
+        const responseCode = response.getResponseCode();
+
+        if (responseCode >= 200 && responseCode < 300) {
+            Logger.log("✅ GitHub Actions へのデプロイリクエストを送信しました。");
+            console.log("GitHub Actions deploy request sent successfully.");
+        } else {
+            Logger.log(`⚠️ GitHub API エラー (${responseCode}): ${response.getContentText()}`);
+            console.error(`GitHub API Error: ${responseCode} - ${response.getContentText()}`);
+        }
+    } catch (e) {
+        Logger.log(`❌ GitHub デプロイリクエスト送信失敗: ${e}`);
+        console.error(`Failed to trigger GitHub deploy: ${e}`);
+    }
 }

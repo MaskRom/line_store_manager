@@ -6,6 +6,8 @@ on:
       - main  # Trigger deployment on pushes to the main branch
     paths:
       - 'frontend/**' # Only trigger if files in the frontend directory change
+  repository_dispatch:
+    types: [deploy_frontend] # Trigger when GAS setup() script sends this event
 
 permissions:
   contents: read

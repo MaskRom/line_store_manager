@@ -37,6 +37,20 @@ const Settings = {
         required: false,
         defaultValue: 'false',
         options: ['true', 'false']
+      },
+      {
+        key: 'GITHUB_TOKEN',
+        name: 'GitHub Personal Access Token',
+        description: 'フロントエンドデプロイ用 (repo権限必須)',
+        required: false,
+        defaultValue: ''
+      },
+      {
+        key: 'GITHUB_REPO',
+        name: 'GitHub Repository',
+        description: 'デプロイ先のリポジトリ名 (例: MaskRom/line_store_manager)',
+        required: false,
+        defaultValue: ''
       }
     ]
   },
@@ -85,6 +99,16 @@ const Settings = {
     }
   },
 
+
+  // ============================== GitHub連携 ==============================
+
+  get GITHUB_TOKEN() {
+    return PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  },
+
+  get GITHUB_REPO() {
+    return PropertiesService.getScriptProperties().getProperty('GITHUB_REPO');
+  },
 
   // ============================== スプレッドシート ==============================
 
