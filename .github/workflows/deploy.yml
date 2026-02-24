@@ -28,6 +28,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate frontend config
+        if: github.event_name == 'repository_dispatch'
+        run: |
+          echo "const CONFIG = {" > frontend/config.js
+          echo "    API_URL: '${{ github.event.client_payload.api_url }}'," >> frontend/config.js
+          echo "    LIFF_ID: '${{ github.event.client_payload.liff_id }}'" >> frontend/config.js
+          echo "};" >> frontend/config.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

@@ -347,7 +347,11 @@ function triggerGitHubDeploy() {
 
     const url = `https://api.github.com/repos/${repo}/dispatches`;
     const payload = {
-        event_type: "deploy_frontend"
+        event_type: "deploy_frontend",
+        client_payload: {
+            api_url: Settings.WEB_APP_URL,
+            liff_id: Settings.LIFF_ID || ""
+        }
     };
 
     const options = {
