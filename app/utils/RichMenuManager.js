@@ -7,42 +7,48 @@
  */
 
 const RichMenuManager = {
-    // メニュー設定
-    CONFIGS: {
-        2: {
-            size: { width: 1200, height: 405 },
-            selected: true,
-            name: "Menu_Staff",
-            chatBarText: "メニュー",
-            areas: [
-                { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "message", text: "スタッフ設定" } },
-                { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "message", text: "シフト希望" } },
-                { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "message", text: "シフト" } }
-            ]
-        },
-        3: {
-            size: { width: 1200, height: 405 },
-            selected: true,
-            name: "Menu_Manager",
-            chatBarText: "管理者メニュー",
-            areas: [
-                { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "message", text: "スタッフ設定" } },
-                { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "message", text: "店舗" } },
-                { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "message", text: "シフト" } }
-            ]
-        },
-        4: {
-            size: { width: 1200, height: 810 },
-            selected: true,
-            name: "Menu_Admin",
-            chatBarText: "管理メニュー",
-            areas: [
-                { bounds: { x: 0, y: 0, width: 600, height: 405 }, action: { type: "message", text: "スタッフ設定" } },
-                { bounds: { x: 600, y: 0, width: 600, height: 405 }, action: { type: "message", text: "店舗追加・削除" } },
-                { bounds: { x: 0, y: 405, width: 600, height: 405 }, action: { type: "message", text: "店舗" } },
-                { bounds: { x: 600, y: 405, width: 600, height: 405 }, action: { type: "message", text: "シフト" } }
-            ]
-        }
+    // メニュー設定 (動的にURLを取得するためgetterを使用)
+    get CONFIGS() {
+        // 設定されたフロントエンドベースURL (LIFF URL優先) を取得
+        const baseUrl = Settings.FRONTEND_BASE_URL;
+
+        return {
+            2: {
+                size: { width: 1200, height: 405 },
+                selected: true,
+                name: "Menu_Staff",
+                chatBarText: "メニュー",
+                areas: [
+                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=register` } },
+                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shift` } },
+                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shiftEdit` } }
+                ]
+            },
+            3: {
+                size: { width: 1200, height: 405 },
+                selected: true,
+                name: "Menu_Manager",
+                chatBarText: "管理者メニュー",
+                areas: [
+                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=register` } },
+                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=admin` } },
+                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shiftEdit` } }
+                ]
+            },
+            4: {
+                size: { width: 1200, height: 810 },
+                selected: true,
+                name: "Menu_Admin",
+                chatBarText: "管理メニュー",
+                areas: [
+                    { bounds: { x: 0, y: 0, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=register` } },
+                    // "店舗追加・削除" は専用LIFFページが無く現状メッセージトリガーのためそのままにする
+                    { bounds: { x: 600, y: 0, width: 600, height: 405 }, action: { type: "message", text: "店舗追加・削除" } },
+                    { bounds: { x: 0, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=admin` } },
+                    { bounds: { x: 600, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}?page=shiftEdit` } }
+                ]
+            }
+        };
     },
 
     /**
