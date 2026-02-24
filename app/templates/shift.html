@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>シフト希望 - シフト管理Bot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f0f2f5;
+            color: #111;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #57BB8A;
+            color: white;
+            padding: 20px 20px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(87, 187, 138, 0.3);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            display: flex;
+            background: #fff;
+            border-bottom: 2px solid #e8f5f0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-item {
+            flex: 0 0 auto;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-family: inherit;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .tab-item.active {
+            color: #57BB8A;
+            border-bottom-color: #57BB8A;
+        }
+
+        /* No store message */
+        .no-store {
+            text-align: center;
+            padding: 60px 24px;
+            color: #888;
+        }
+
+        .no-store .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .no-store p {
+            font-size: 15px;
+        }
+
+        /* Tab Panel */
+        .tab-panel {
+            display: none;
+            padding: 20px 16px;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Card */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 4px solid #57BB8A;
+        }
+
+        /* Textarea */
+        .textarea-wrap {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.2s;
+            background: #fafafa;
+            color: #333;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #57BB8A;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(87, 187, 138, 0.15);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        /* Save Button */
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: #57BB8A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(87, 187, 138, 0.3);
+        }
+
+        .btn-save:hover:not(:disabled) {
+            background: #4aaa7c;
+            transform: translateY(-1px);
+        }
+
+        .btn-save:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-save:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            background: #57BB8A;
+        }
+
+        .toast.error {
+            background: #e53935;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e1e4e8;
+            border-top-color: #57BB8A;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                background: #fff;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📅 シフト希望</h1>
+        <p>店舗ごとのシフト希望・休み希望を登録</p>
+    </div>
+
+    <? if (stores.length === 0) { ?>
+    <div class="no-store">
+        <div class="icon">🏪</div>
+        <p>所属店舗が登録されていません。<br>先にスタッフ設定から店舗登録を行ってください。</p>
+    </div>
+    <? } else { ?>
+
+    <!-- タブバー・タブパネルはJSで生成 -->
+    <div class="tab-bar" id="tabBar"></div>
+    <div id="panelContainer"></div>
+
+    <? } ?>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- サーバーデータ（GASテンプレートタグをJSブロックから分離） -->
+    <script type="application/json" id="storesDataJson"><?!= JSON.stringify(stores) ?></script>
+    <script type="application/json" id="userIdJson">"<?= userId ?>"</script>
+
+    <script>
+        const storesData = JSON.parse(document.getElementById('storesDataJson').textContent);
+        const userId = JSON.parse(document.getElementById('userIdJson').textContent);
+
+        function switchTab(index) {
+            document.querySelectorAll('.tab-item').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.tab-panel').forEach((p, i) => {
+                p.classList.toggle('active', i === index);
+            });
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // イベント登録（DOMContentLoaded後）
+        document.addEventListener('DOMContentLoaded', function () {
+            var tabBar = document.getElementById('tabBar');
+            var panelContainer = document.getElementById('panelContainer');
+
+            // タブとパネルをJSで生成
+            storesData.forEach(function (store, i) {
+                // タブボタン
+                var tab = document.createElement('button');
+                tab.className = 'tab-item' + (i === 0 ? ' active' : '');
+                tab.dataset.index = i;
+                tab.textContent = store.storeName;
+                tab.addEventListener('click', function () {
+                    switchTab(Number(this.dataset.index));
+                });
+                if (tabBar) tabBar.appendChild(tab);
+
+                // パネル
+                var panel = document.createElement('div');
+                panel.className = 'tab-panel' + (i === 0 ? ' active' : '');
+                panel.id = 'panel-' + i;
+                panel.innerHTML =
+                    '<div class="card">' +
+                    '<div class="card-title">📋 シフト希望</div>' +
+                    '<div class="textarea-wrap">' +
+                    '<textarea id="shiftRequest-' + i + '" placeholder="例: 月・水・金 9:00〜17:00希望、木曜AM不可">' +
+                    escapeHtml(store.shiftRequest || '') +
+                    '</textarea>' +
+                    '</div>' +
+                    '<p class="hint">※ 来月の希望シフト帯を自由に入力してください</p>' +
+                    '</div>' +
+                    '<div class="card">' +
+                    '<div class="card-title">🗓️ 休み希望</div>' +
+                    '<div class="textarea-wrap">' +
+                    '<textarea id="dayOffRaw-' + i + '" placeholder="例: 3/15 終日、3/20 午前のみ不可">' +
+                    escapeHtml(store.dayOffRaw || '') +
+                    '</textarea>' +
+                    '</div>' +
+                    '<p class="hint">※ 休み希望がある日付と理由を入力してください</p>' +
+                    '</div>' +
+                    '<button class="btn-save" id="saveBtn-' + i + '" data-index="' + i + '">💾 保存する</button>';
+                if (panelContainer) panelContainer.appendChild(panel);
+
+                // 保存ボタンにイベント登録
+                panel.querySelector('.btn-save').addEventListener('click', function () {
+                    saveStore(Number(this.dataset.index));
+                });
+            });
+        });
+
+        function saveStore(index) {
+            const store = storesData[index];
+            const shiftRequest = document.getElementById(`shiftRequest-${index}`).value;
+            const dayOffRaw = document.getElementById(`dayOffRaw-${index}`).value;
+            const btn = document.getElementById(`saveBtn-${index}`);
+
+            btn.disabled = true;
+            document.getElementById('loadingOverlay').classList.add('show');
+
+            google.script.run
+                .withSuccessHandler(result => {
+                    document.getElementById('loadingOverlay').classList.remove('show');
+                    btn.disabled = false;
+                    if (result.success) {
+                        showToast('✅ ' + result.message, 'success');
+                    } else {
+                        showToast('❌ ' + result.message, 'error');
+                    }
+                })
+                .withFailureHandler(err => {
+                    document.getElementById('loadingOverlay').classList.remove('show');
+                    btn.disabled = false;
+                    showToast('❌ エラー: ' + err.message, 'error');
+                })
+                .saveShiftRequest({
+                    userId: userId,
+                    storeId: store.storeId,
+                    employeeId: store.employeeId,
+                    shiftRequest: shiftRequest,
+                    dayOffRaw: dayOffRaw
+                });
+        }
+
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast' + (type ? ' ' + type : '');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+
+</html>

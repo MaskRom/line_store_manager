@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>店舗管理 - シフト管理Bot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            color: #111;
+            min-height: 100vh;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-sub {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        /* ===== Tabs ===== */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 16px 20px 0;
+            max-width: 900px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            border: none;
+            background: #e5e7eb;
+            color: #555;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: #E67C73;
+            box-shadow: 0 -2px 0 #E67C73 inset;
+        }
+
+        /* ===== Main Area ===== */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .tab-panel {
+            display: none;
+            background: #fff;
+            border-radius: 0 12px 12px 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ===== Panel Header ===== */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* ===== Add Button ===== */
+        .btn-add {
+            background: #E67C73;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .btn-add:hover {
+            background: #d66b63;
+        }
+
+        /* ===== Table ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            background: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid #eee;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background: #fafafa;
+        }
+
+        tbody td {
+            padding: 12px;
+            vertical-align: middle;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .badge-manager {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-staff {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-active {
+            background: #e8f9ee;
+            color: #27ae60;
+        }
+
+        .badge-inactive {
+            background: #f0f0f0;
+            color: #999;
+        }
+
+        .linked {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .unlinked {
+            color: #ccc;
+        }
+
+        /* ===== Action Buttons ===== */
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: #e8f0fe;
+            color: #3b82f6;
+        }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-delete {
+            background: #fde8e8;
+            color: #e53935;
+        }
+
+        .btn-delete:hover {
+            background: #e53935;
+            color: #fff;
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+
+        .empty-state p {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        /* ===== Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+            border-left: 4px solid #E67C73;
+            padding-left: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 6px;
+        }
+
+        .required {
+            color: #e53935;
+            margin-left: 3px;
+            font-size: 11px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #E67C73;
+            box-shadow: 0 0 0 3px rgba(230, 124, 115, 0.15);
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.763L10.825 4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #444;
+            cursor: pointer;
+        }
+
+        .form-check input {
+            width: auto;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-save {
+            flex: 2;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #E67C73;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #d66b63;
+        }
+
+        .btn-save:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ===== Loading Overlay ===== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 4px solid #e1e4e8;
+            border-top-color: #E67C73;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 3000;
+            transition: transform 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .toast.success {
+            background: #27ae60;
+        }
+
+        .toast.error {
+            background: #e53935;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== Confirm Modal ===== */
+        .confirm-body {
+            text-align: center;
+            padding: 8px 0 16px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                padding: 12px 12px 0;
+            }
+
+            .main {
+                padding: 0 8px 40px;
+            }
+
+            .panel-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            thead th,
+            tbody td {
+                padding: 8px 6px;
+            }
+
+            .btn-edit {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+
+            .badge {
+                font-size: 10px;
+                padding: 1px 5px;
+            }
+        }
+
+        /* ===== Staff Inactive ===== */
+        .staff-inactive {
+            background-color: #c8c8c8;
+        }
+
+        .staff-inactive td {
+            color: #666;
+        }
+
+        /* ボタンの色は天層の色を維持する */
+        .staff-inactive .btn-edit {
+            background: #e8f0fe;
+            color: #3b82f6;
+        }
+
+        .staff-inactive .btn-edit:hover {
+            background: #3b82f6;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-inner">
+            <div>
+                <h1>🏪 店舗管理</h1>
+                <div class="header-sub">責任者:
+                    <?= managerName ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabs">
+        <? for (var i = 0; i < managedStores.length; i++) { ?>
+        <button class="tab-btn <?= i === 0 ? 'active' : '' ?>" data-tab="<?= i ?>" id="tab-btn-<?= i ?>">
+            <?= managedStores[i].storeName ?>
+        </button>
+        <? } ?>
+    </div>
+
+    <!-- Panels -->
+    <div class="main">
+        <? for (var i = 0; i < managedStores.length; i++) { ?>
+        <div class="tab-panel <?= i === 0 ? 'active' : '' ?>" id="tab-panel-<?= i ?>">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span
+                        style="background:#eee; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:8px;">店番:
+                        <?= managedStores[i].storeId ?>
+                    </span>
+                    <span style="font-size:13px; font-weight:normal; color:#666; margin-left:8px;">合計:
+                        <?= managedStores[i].staff.length ?> 名
+                    </span>
+                </div>
+                <button class="btn-add" data-store-id="<?= managedStores[i].storeId ?>"
+                    data-store-name="<?= managedStores[i].storeName ?>" id="btnAdd-<?= i ?>">
+                    ＋ スタッフ追加
+                </button>
+            </div>
+
+            <!-- 店舗設定フォーム -->
+            <div class="store-settings-form"
+                style="background:#f8f9fa; border-radius:10px; padding:14px 16px; margin-bottom:16px; border:1px solid #eee;">
+                <div style="font-size:13px; font-weight:600; color:#555; margin-bottom:10px;">⚙️ 店舗設定</div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:12px; color:#666; display:block; margin-bottom:4px;">何日前にシフト作成</label>
+                        <input type="number" min="1" max="60" class="store-days-before"
+                            data-store-row="<?= managedStores[i].storeRowIndex ?>"
+                            value="<?= managedStores[i].daysBefore ?>"
+                            style="width:70px; padding:6px 8px; border:1px solid #ddd; border-radius:6px; font-size:13px; font-family:inherit;">
+                    </div>
+                    <div style="flex:1; min-width:160px;">
+                        <label style="font-size:12px; color:#666; display:block; margin-bottom:4px;">追加プロンプト</label>
+                        <input type="text" class="store-prompt" data-store-row="<?= managedStores[i].storeRowIndex ?>"
+                            value="<?= managedStores[i].prompt ?>" placeholder="シフト表生成時の追加指示"
+                            style="width:100%; padding:6px 8px; border:1px solid #ddd; border-radius:6px; font-size:13px; font-family:inherit; box-sizing:border-box;">
+                    </div>
+                    <div style="flex:0 0 auto;">
+                        <button class="btn-store-settings-save" data-store-row="<?= managedStores[i].storeRowIndex ?>"
+                            style="padding:6px 16px; background:#4CAF50; color:#fff; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">
+                            保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <? if (managedStores[i].staff.length === 0) { ?>
+            <div class="empty-state">
+                <div style="font-size:40px">👤</div>
+                <p>スタッフが登録されていません</p>
+            </div>
+            <? } else { ?>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>従業員ID</th>
+                            <th>名前</th>
+                            <th>役職</th>
+                            <th>LINE連携</th>
+                            <th>編集</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <? for (var j = 0; j < managedStores[i].staff.length; j++) {
+                            var s = managedStores[i].staff[j];
+                            var inactive = (s.isActive === false || s.isActive === 'FALSE' || s.isActive === 0);
+                            var isMgr = (s.isManager === true || s.isManager === 'TRUE' || s.isManager === 1);
+                        ?>
+                        <tr<?= inactive ? ' class="staff-inactive"' : '' ?>>
+                            <td>
+                                <?= s.employeeId ?>
+                            </td>
+                            <td>
+                                <?= s.name || '—' ?>
+                            </td>
+                            <td>
+                                <span class="badge <?= isMgr ? 'badge-manager' : 'badge-staff' ?>">
+                                    <?= isMgr ? '責任者' : 'スタッフ' ?>
+                                </span>
+                            </td>
+                            <td>
+                                <? if (s.lineId) { ?>
+                                <span class="linked">✓ 連携済</span>
+                                <? } else { ?>
+                                <span class="unlinked">未連携</span>
+                                <? } ?>
+                            </td>
+                            <td>
+                                <button class="btn-edit" data-row="<?= s.rowIndex ?>" data-store-id="<?= s.storeId ?>"
+                                    data-employee-id="<?= s.employeeId ?>" data-password="<?= s.password ?>"
+                                    data-name="<?= s.name ?>" data-display-name="<?= s.displayName ?>"
+                                    data-is-manager="<?= s.isManager ?>" data-is-active="<?= s.isActive ?>"
+                                    data-shift-request="<?= s.shiftRequest ?>" data-line-id="<?= s.lineId ?>"
+                                    data-self="<?= (s.lineId && s.lineId === userId) ? 'true' : 'false' ?>">
+                                    編集
+                                </button>
+                            </td>
+                            </tr>
+                            <? } ?>
+                    </tbody>
+                </table>
+            </div>
+            <? } ?>
+        </div>
+        <? } ?>
+
+        <? if (managedStores.length === 0) { ?>
+        <div class="tab-panel active">
+            <div class="empty-state">
+                <div style="font-size:48px">🏪</div>
+                <p>責任者として登録されている店舗がありません。</p>
+            </div>
+        </div>
+        <? } ?>
+    </div>
+
+    <!-- Staff Modal (Add / Edit) -->
+    <div class="modal-overlay" id="staffModal">
+        <div class="modal">
+            <div class="modal-title" id="modalTitle">スタッフ追加</div>
+            <input type="hidden" id="modalRowIndex">
+            <input type="hidden" id="modalStoreId">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="modalEmployeeId">従業員ID（3桁）<span class="required">*</span></label>
+                    <input type="tel" id="modalEmployeeId" maxlength="3" pattern="\d{3}" placeholder="例: 123">
+                </div>
+                <div class="form-group">
+                    <label for="modalPassword">パスワード（4桁）<span class="required">*</span></label>
+                    <input type="text" id="modalPassword" maxlength="4" pattern="\d{4}" placeholder="例: 1234">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="modalName">名前</label>
+                    <input type="text" id="modalName" placeholder="山田 太郎">
+                </div>
+                <div class="form-group">
+                    <label for="modalDisplayName">表示名</label>
+                    <input type="text" id="modalDisplayName" placeholder="たろう">
+                </div>
+            </div>
+            <div class="form-group" style="display:flex; gap:24px; align-items:center; padding:4px 0;">
+                <label class="form-check">
+                    <input type="checkbox" id="modalIsManager">
+                    店舗責任者
+                </label>
+                <label class="form-check">
+                    <input type="checkbox" id="modalIsActive">
+                    有効
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="modalShiftRequest">シフト希望</label>
+                <textarea id="modalShiftRequest" rows="3"
+                    style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;transition:border-color 0.2s;"
+                    placeholder="例: 月・水・金 9:00～17:00希望、木曜返不可"></textarea>
+            </div>
+
+            <div class="modal-footer" style="flex-direction:column; gap:10px;">
+                <!-- 削除ボタン（編集時のみ表示、自分は非表示） -->
+                <button class="btn-save" id="btnModalDelete"
+                    style="display:none; background:#e53935; flex:1; width:100%;">
+                    スタッフ削除
+                </button>
+                <!-- LINE ID解除ボタン（編集時のみ表示、連携なしの場合はグレーアウト） -->
+                <button class="btn-save" id="btnModalUnlink" style="display:none; flex:1; width:100%;">
+                    LINE解除
+                </button>
+                <div style="display:flex; gap:10px; width:100%;">
+                    <button class="btn-cancel" id="btnModalCancel">キャンセル</button>
+                    <button class="btn-save" id="btnModalSave">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width:360px;">
+            <div class="modal-title" style="color:#e53935; border-color:#e53935;">スタッフ削除</div>
+            <div class="confirm-body" id="confirmBody">
+                このスタッフを削除します。<br>LINE連携も解除されます。<br>よろしいですか？
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnConfirmCancel">キャンセル</button>
+                <button class="btn-save" id="btnConfirmOk" style="background:#e53935; flex:1;">削除する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p style="color:#666; font-size:14px;">処理中...</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== 現在のユーザーID =====
+        const currentUserId = '<?= userId ?>';
+
+        // ===== Tab switching =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = this.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(`tab-panel-${idx}`).classList.add('active');
+            });
+        });
+
+        // ===== Add buttons =====
+        document.querySelectorAll('.btn-add').forEach(btn => {
+            btn.addEventListener('click', function () {
+                openAddModal(this.dataset.storeId, this.dataset.storeName);
+            });
+        });
+
+        // ===== Edit buttons =====
+        document.querySelectorAll('.btn-edit').forEach(btn => bindEditBtn(btn));
+
+        // ===== 店舗設定 保存ボタン =====
+        document.querySelectorAll('.btn-store-settings-save').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const form = this.closest('.store-settings-form');
+                const storeRowIndex = this.dataset.storeRow;
+                const daysBefore = form.querySelector('.store-days-before').value.trim();
+                const prompt = form.querySelector('.store-prompt').value.trim();
+                if (!storeRowIndex) {
+                    showToast('店舗データが見つかりません', 'error');
+                    return;
+                }
+                showLoading();
+                google.script.run
+                    .withSuccessHandler(res => {
+                        hideLoading();
+                        showToast(res.success ? '設定を保存しました ✓' : res.message, res.success ? 'success' : 'error');
+                    })
+                    .withFailureHandler(err => {
+                        hideLoading();
+                        showToast('エラー: ' + err.message, 'error');
+                    })
+                    .saveStoreSettings({ storeRowIndex, daysBefore, prompt });
+            });
+        });
+
+        // ===== Delete buttons (now inside modal) =====
+        let pendingDeleteRow = null;
+        let pendingDeleteEmployeeId = null;
+        let pendingUnlinkRow = null;
+
+        // ===== Modal: Add =====
+        function openAddModal(storeId, storeName) {
+            document.getElementById('modalTitle').textContent = `スタッフ追加（${storeName}）`;
+            document.getElementById('modalRowIndex').value = '';
+            document.getElementById('modalStoreId').value = storeId;
+            document.getElementById('modalEmployeeId').value = '';
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('modalName').value = '';
+            document.getElementById('modalDisplayName').value = '';
+            document.getElementById('modalIsManager').checked = false;
+            document.getElementById('modalIsActive').checked = true;
+            document.getElementById('modalShiftRequest').value = '';
+            document.getElementById('btnModalDelete').style.display = 'none';
+            document.getElementById('staffModal').classList.add('show');
+        }
+
+        // 数字のみ入力を許可する
+        document.getElementById('modalEmployeeId').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 3);
+        });
+        document.getElementById('modalPassword').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 4);
+        });
+
+        // ===== Modal: Edit =====
+        function openEditModal(data, isSelf) {
+            document.getElementById('modalTitle').textContent = `スタッフ編集`;
+            document.getElementById('modalRowIndex').value = data.rowIndex;
+            document.getElementById('modalStoreId').value = data.storeId;
+            document.getElementById('modalEmployeeId').value = data.employeeId;
+            document.getElementById('modalPassword').value = data.password;
+            document.getElementById('modalName').value = data.name;
+            document.getElementById('modalDisplayName').value = data.displayName;
+            document.getElementById('modalIsManager').checked = data.isManager;
+            document.getElementById('modalIsActive').checked = data.isActive;
+            document.getElementById('modalShiftRequest').value = data.shiftRequest || '';
+
+            // 自分以外の場合のみ削除ボタンを表示
+            const delBtn = document.getElementById('btnModalDelete');
+            delBtn.style.display = isSelf ? 'none' : 'block';
+            delBtn.dataset.row = data.rowIndex;
+            delBtn.dataset.employeeId = data.employeeId;
+
+            // LINE連携済は解除ボタンを有効、未連携はグレーアウトで表示
+            const unlinkBtn = document.getElementById('btnModalUnlink');
+            const hasLineId = !!(data.lineId);
+            unlinkBtn.style.display = 'block';
+            unlinkBtn.disabled = isSelf || !hasLineId;
+            unlinkBtn.style.background = (!isSelf && hasLineId) ? '#f59e0b' : '#ccc';
+            unlinkBtn.style.cursor = (!isSelf && hasLineId) ? 'pointer' : 'not-allowed';
+            unlinkBtn.dataset.row = data.rowIndex;
+            unlinkBtn.dataset.employeeId = data.employeeId;
+
+            document.getElementById('staffModal').classList.add('show');
+        }
+
+        // ===== Modal: Close =====
+        document.getElementById('btnModalCancel').addEventListener('click', () => {
+            document.getElementById('staffModal').classList.remove('show');
+        });
+        document.getElementById('staffModal').addEventListener('click', function (e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+
+        // ===== Modal: Save =====
+        document.getElementById('btnModalSave').addEventListener('click', () => {
+            const employeeId = document.getElementById('modalEmployeeId').value.trim();
+            const password = document.getElementById('modalPassword').value.trim();
+            if (!employeeId || !password) {
+                showToast('従業員IDとパスワードは必須です', 'error');
+                return;
+            }
+            if (!/^\d{3}$/.test(employeeId)) {
+                showToast('従業員IDは数字3桁で入力してください', 'error');
+                return;
+            }
+            if (!/^\d{4}$/.test(password)) {
+                showToast('パスワードは数字4桁で入力してください', 'error');
+                return;
+            }
+
+            const payload = {
+                rowIndex: document.getElementById('modalRowIndex').value || null,
+                storeId: document.getElementById('modalStoreId').value,
+                employeeId: employeeId,
+                password: password,
+                name: document.getElementById('modalName').value.trim(),
+                displayName: document.getElementById('modalDisplayName').value.trim(),
+                isManager: document.getElementById('modalIsManager').checked,
+                isActive: document.getElementById('modalIsActive').checked,
+                shiftRequest: document.getElementById('modalShiftRequest').value
+            };
+
+            showLoading();
+            document.getElementById('staffModal').classList.remove('show');
+
+            const isNew = !payload.rowIndex;
+
+            google.script.run
+                .withSuccessHandler(res => {
+                    hideLoading();
+                    if (res.success) {
+                        if (isNew) {
+                            // 新規追加: テーブルに行を追加
+                            addStaffRow(payload, res.rowIndex);
+                            showToast('登録しました ✓ 続けて追加できます', 'success');
+                            // モーダルをクリアして再表示（連続登録）
+                            document.getElementById('modalRowIndex').value = '';
+                            document.getElementById('modalEmployeeId').value = '';
+                            document.getElementById('modalPassword').value = '';
+                            document.getElementById('modalName').value = '';
+                            document.getElementById('modalDisplayName').value = '';
+                            document.getElementById('modalIsManager').checked = false;
+                            document.getElementById('modalIsActive').checked = true;
+                            document.getElementById('modalShiftRequest').value = '';
+                            document.getElementById('staffModal').classList.add('show');
+                        } else {
+                            // 編集: 既存行をその場で更新
+                            updateStaffRow(payload);
+                            showToast('保存しました ✓', 'success');
+                        }
+                    } else {
+                        showToast(res.message, 'error');
+                        document.getElementById('staffModal').classList.add('show');
+                    }
+                })
+                .withFailureHandler(err => {
+                    hideLoading();
+                    showToast('エラー: ' + err.message, 'error');
+                    document.getElementById('staffModal').classList.add('show');
+                })
+                .saveStoreStaff(payload);
+        });
+
+        // ===== Confirm: Cancel =====
+        document.getElementById('btnConfirmCancel').addEventListener('click', () => {
+            pendingDeleteRow = null;
+            pendingUnlinkRow = null;
+            document.getElementById('confirmModal').classList.remove('show');
+        });
+        document.getElementById('confirmModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                pendingDeleteRow = null;
+                pendingUnlinkRow = null;
+                this.classList.remove('show');
+            }
+        });
+
+        // ===== Confirm: OK =====
+        document.getElementById('btnConfirmOk').addEventListener('click', () => {
+            document.getElementById('confirmModal').classList.remove('show');
+
+            // LINE解除
+            if (pendingUnlinkRow) {
+                const rowIndex = pendingUnlinkRow;
+                pendingUnlinkRow = null;
+                showLoading();
+                google.script.run
+                    .withSuccessHandler(res => {
+                        hideLoading();
+                        if (res.success) {
+                            showToast('LINE連携を解除しました', 'success');
+                            unlinkLineRow(rowIndex);
+                        } else {
+                            showToast(res.message, 'error');
+                        }
+                    })
+                    .withFailureHandler(err => {
+                        hideLoading();
+                        showToast('エラー: ' + err.message, 'error');
+                    })
+                    .unlinkStaffLineId({ rowIndex: rowIndex });
+                return;
+            }
+
+            // スタッフ削除
+            if (!pendingDeleteRow) return;
+            const rowIndex = pendingDeleteRow;
+            pendingDeleteRow = null;
+            showLoading();
+            google.script.run
+                .withSuccessHandler(res => {
+                    hideLoading();
+                    if (res.success) {
+                        showToast('削除しました', 'success');
+                        removeStaffRow(rowIndex);
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                })
+                .withFailureHandler(err => {
+                    hideLoading();
+                    showToast('エラー: ' + err.message, 'error');
+                })
+                .deleteStoreStaff({ rowIndex: rowIndex, requesterId: currentUserId });
+        });
+
+        // ===== Helpers =====
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `toast ${type || ''} show`;
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // ===== スタッフ数バッジを更新 =====
+        function updateStaffCount(storeId, delta) {
+            // data-store-id が一致する btn-add を探してパネルを特定
+            const btn = document.querySelector(`.btn-add[data-store-id="${storeId}"]`);
+            if (!btn) return;
+            const panel = btn.closest('.tab-panel');
+            if (!panel) return;
+            const badge = panel.querySelector('.panel-title span:last-of-type');
+            if (!badge) return;
+            const m = badge.textContent.match(/\d+/);
+            const cur = m ? parseInt(m[0]) : 0;
+            badge.textContent = `合計: ${cur + delta} 名`;
+        }
+
+        // ===== 削除ボタンのリスナーを付与（不使用，互換性のため残存） =====
+        function bindDeleteBtn(btn) { /* no-op */ }
+
+        // ===== 編集ボタンのリスナーを付与 =====
+        function bindEditBtn(btn) {
+            btn.addEventListener('click', function () {
+                const d = this.dataset;
+                const isSelf = d.self === 'true';
+                openEditModal({
+                    rowIndex: d.row,
+                    storeId: d.storeId,
+                    employeeId: d.employeeId,
+                    password: d.password,
+                    name: d.name,
+                    displayName: d.displayName,
+                    lineId: d.lineId || '',
+                    isManager: d.isManager === 'true' || d.isManager === 'TRUE' || d.isManager === '1',
+                    isActive: d.isActive === 'true' || d.isActive === 'TRUE' || d.isActive === '1',
+                    shiftRequest: d.shiftRequest || ''
+                }, isSelf);
+            });
+        }
+
+        // ===== モーダル内削除ボタン =====
+        document.getElementById('btnModalDelete').addEventListener('click', function () {
+            const rowIndex = this.dataset.row;
+            const employeeId = this.dataset.employeeId;
+            pendingDeleteRow = rowIndex;
+            document.getElementById('confirmBody').innerHTML =
+                `従業員ID: <strong>${employeeId}</strong> を削除します。<br>LINE連携も解除されます。<br>よろしいですか？`;
+            document.getElementById('staffModal').classList.remove('show');
+            document.getElementById('confirmModal').classList.add('show');
+        });
+
+        // ===== モーダル内LINE ID解除ボタン =====
+        document.getElementById('btnModalUnlink').addEventListener('click', function () {
+            if (this.disabled) return;
+            const rowIndex = this.dataset.row;
+            const employeeId = this.dataset.employeeId;
+            pendingUnlinkRow = rowIndex;
+            pendingDeleteRow = null;
+            document.getElementById('confirmBody').innerHTML =
+                `従業員ID: <strong>${employeeId}</strong> のLINE連携を解除します。<br>よろしいですか？`;
+            document.getElementById('staffModal').classList.remove('show');
+            document.getElementById('confirmModal').classList.add('show');
+        });
+
+        // ===== 行HTMLを生成（5列構成） =====
+        function buildRow(p, rowIndex) {
+            const isManager = p.isManager;
+            const isActive = p.isActive;
+            const tr = document.createElement('tr');
+            tr.dataset.rowIndex = rowIndex || '';
+            if (!isActive) tr.classList.add('staff-inactive');
+            const badgeCls = isManager ? 'badge-manager' : 'badge-staff';
+            const badgeLabel = isManager ? '責任者' : 'スタッフ';
+            tr.innerHTML = `
+                <td>${p.employeeId}</td>
+                <td>${p.name || '—'}</td>
+                <td><span class="badge ${badgeCls}">${badgeLabel}</span></td>
+                <td><span class="unlinked">未連携</span></td>
+                <td>
+                    <button class="btn-edit"
+                        data-row="${rowIndex || ''}"
+                        data-store-id="${p.storeId}"
+                        data-employee-id="${p.employeeId}"
+                        data-password="${p.password}"
+                        data-name="${p.name || ''}"
+                        data-display-name="${p.displayName || ''}"
+                        data-line-id=""
+                        data-is-manager="${isManager}"
+                        data-is-active="${isActive}"
+                        data-shift-request="${p.shiftRequest || ''}"
+                        data-self="false">編集</button>
+                </td>`;
+            bindEditBtn(tr.querySelector('.btn-edit'));
+            return tr;
+        }
+
+        // ===== 新規スタッフ追加: DOM挿入 =====
+        function addStaffRow(payload, rowIndex) {
+            const storeId = payload.storeId;
+            const btn = document.querySelector(`.btn-add[data-store-id="${storeId}"]`);
+            if (!btn) return;
+            const panel = btn.closest('.tab-panel');
+            if (!panel) return;
+
+            let tableWrap = panel.querySelector('.table-wrap');
+            if (!tableWrap) {
+                const emptyState = panel.querySelector('.empty-state');
+                if (emptyState) emptyState.remove();
+                tableWrap = document.createElement('div');
+                tableWrap.className = 'table-wrap';
+                tableWrap.innerHTML = `<table><thead><tr>
+                    <th>従業員ID</th><th>名前</th><th>役職</th><th>LINE連携</th><th>編集</th>
+                </tr></thead><tbody></tbody></table>`;
+                panel.appendChild(tableWrap);
+            }
+            const tbody = tableWrap.querySelector('tbody');
+            tbody.appendChild(buildRow(payload, rowIndex));
+            updateStaffCount(storeId, 1);
+        }
+
+        // ===== 既存スタッフ編集: 行のセルを更新 =====
+        function updateStaffRow(payload) {
+            const rowIndex = payload.rowIndex;
+            const editBtn = document.querySelector(`.btn-edit[data-row="${rowIndex}"]`);
+            if (!editBtn) return;
+            const tr = editBtn.closest('tr');
+            if (!tr) return;
+
+            const tds = tr.querySelectorAll('td');
+            // 列構成: 0=従業員ID, 1=名前, 2=役職, 3=LINE連携, 4=編集
+            tds[0].textContent = payload.employeeId;
+            tds[1].textContent = payload.name || '—';
+            const badgeCls = payload.isManager ? 'badge-manager' : 'badge-staff';
+            const badgeLabel = payload.isManager ? '責任者' : 'スタッフ';
+            tds[2].innerHTML = `<span class="badge ${badgeCls}">${badgeLabel}</span>`;
+            // tds[3] LINE連携はそのまま
+
+            // グレーアウトクラスを更新
+            if (payload.isActive) {
+                tr.classList.remove('staff-inactive');
+            } else {
+                tr.classList.add('staff-inactive');
+            }
+
+            // 編集ボタンのdata属性を更新
+            Object.assign(editBtn.dataset, {
+                employeeId: payload.employeeId,
+                password: payload.password,
+                name: payload.name || '',
+                displayName: payload.displayName || '',
+                isManager: payload.isManager,
+                isActive: payload.isActive,
+                shiftRequest: payload.shiftRequest || ''
+            });
+
+            // モーダル削除ボタンのdata属性も更新
+            const delBtn = document.getElementById('btnModalDelete');
+            if (delBtn.dataset.row === rowIndex) {
+                delBtn.dataset.row = payload.rowIndex;
+            }
+        }
+
+        // ===== LINE解除後: 連携セルを「未連携」に更新 =====
+        function unlinkLineRow(rowIndex) {
+            const editBtn = document.querySelector(`.btn-edit[data-row="${rowIndex}"]`);
+            if (!editBtn) return;
+            const tr = editBtn.closest('tr');
+            if (!tr) return;
+            const tds = tr.querySelectorAll('td');
+            if (tds[3]) tds[3].innerHTML = '<span class="unlinked">未連携</span>';
+            editBtn.dataset.lineId = '';
+        }
+
+        // ===== スタッフ削除: DOMから行を除去 =====
+        function removeStaffRow(rowIndex) {
+            const deleteBtn = document.querySelector(`.btn-delete[data-row="${rowIndex}"]`);
+            if (!deleteBtn) return;
+            const tr = deleteBtn.closest('tr');
+            if (!tr) return;
+
+            // storeIdはeditボタンから取得
+            const editBtn = tr.querySelector('.btn-edit');
+            const storeId = editBtn ? editBtn.dataset.storeId : null;
+
+            tr.remove();
+            if (storeId) updateStaffCount(storeId, -1);
+        }
+    </script>
+</body>
+
+</html>

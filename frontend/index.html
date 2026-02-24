@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shift Management</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 15px 0;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #00B900;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        a:hover {
+            background-color: #009900;
+        }
+
+        #debug {
+            color: red;
+            font-size: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>シフト管理Bot</h2>
+    <p>メニューを選択してください</p>
+
+    <ul>
+        <li><a href="?page=register">ユーザー登録・店舗紐付け</a></li>
+    </ul>
+
+    <div id="debug"></div>
+
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="./config.js"></script>
+    <script>
+        const liffId = CONFIG.LIFF_ID;
+        const debugEl = document.getElementById('debug');
+
+        // エラーハンドラー
+        window.onerror = function (msg, url, line, col, error) {
+            debugEl.innerHTML += `ERROR: ${msg} <br> ${url}:${line}:${col} <br> ${error}<br>`;
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            if (liffId) {
+                liff.init({ liffId: liffId })
+                    .then(() => {
+                        if (liff.isLoggedIn()) {
+                            // LIFF URLから開かれた場合、クエリパラメータをチェック
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const page = urlParams.get('page');
+
+                            // ページクエリがregisterならリダイレクト（本来はサーバーサイドで処理されるはずだが、念のため）
+                            if (page === 'register') {
+                                // 既にregisterページにいるはずだが、もしindexに来てしまった場合
+                                // location.replace("?page=register");
+                                // 無限ループの危険があるので一旦コメントアウト
+                                debugEl.innerHTML += "Page param is register but loaded index.<br>";
+                            }
+
+                            // LIFFのコンテキスト確認
+                            // const context = liff.getContext();
+                            // debugEl.innerHTML += "Context: " + JSON.stringify(context) + "<br>";
+                        }
+                    })
+                    .catch((err) => {
+                        debugEl.innerHTML += "LIFF Init Error: " + err + "<br>";
+                    });
+            } else {
+                debugEl.innerHTML += "LIFF ID not set.<br>";
+                // 開発用：URLパラメータからuserId取得を試みる
+            }
+        });
+    </script>
+</body>
+
+</html>
