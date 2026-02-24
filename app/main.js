@@ -15,121 +15,30 @@ const App = {
             return App.handleApiGet(page, userId);
         }
 
-        // シフト希望ページ
-        if (page === 'shift') {
-            const template = HtmlService.createTemplateFromFile("app/templates/shift");
-            template.userId = userId;
-
-            // 所属する全店舗データを取得（複数店舗対応）
-            const storeLinks = userId ? Models.ByStore.filterByLineId(userId) : [];
-            template.stores = storeLinks.map(link => {
-                const dayOff = Models.DayOff.findByStoreAndEmployee(
-                    link.data.storeId, link.data.employeeId
-                );
-                return {
-                    storeId: link.data.storeId,
-                    storeName: (() => {
-                        const s = Models.Store.objects.get({ id: String(link.data.storeId) });
-                        return s ? s.data.name : `店舗${link.data.storeId}`;
-                    })(),
-                    employeeId: link.data.employeeId,
-                    shiftRequest: link.data.shiftRequest || '',
-                    dayOffRaw: dayOff ? (dayOff.data.rawData || '') : ''
-                };
-            });
-
-            return template.evaluate()
-                .setTitle("シフト希望")
-                .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+        // HTMLリクエストの場合は、フロントエンド (LIFF/GitHub Pages) へリダイレクトする
+        // またはクエリパラメータを引き継いでリダイレクト
+        let redirectUrl = Settings.FRONTEND_BASE_URL;
+        if (page) {
+            redirectUrl += `?page=${page}`;
+            if (userId) redirectUrl += `&userId=${userId}`;
         }
 
-        // 店舗管理ページ（role=3以上のマネージャー向け）
-        if (page === 'store') {
-            const template = HtmlService.createTemplateFromFile("app/templates/admin");
-            template.userId = userId;
-
-            // 自分が責任者の店舗を取得
-            const myLinks = userId ? Models.ByStore.filterByLineId(userId) : [];
-            const managerLinks = myLinks.filter(
-                l => l.data.isManager === true || l.data.isManager === 'TRUE' || l.data.isManager === 1
-            );
-            const managerStoreIds = managerLinks.map(l => String(l.data.storeId));
-
-            // 担当店舗の詳細 + 各店舗のスタッフ一覧
-            template.managedStores = managerStoreIds.map(storeId => {
-                const storeObj = Models.Store.objects.get({ id: storeId });
-                const storeName = storeObj ? storeObj.data.name : `店舗${storeId}`;
-                const allLinks = Models.ByStore.objects.all();
-                const staffList = allLinks.filter(l => String(l.data.storeId) === storeId)
-                    .sort((a, b) => {
-                        const aId = String(a.data.employeeId || '');
-                        const bId = String(b.data.employeeId || '');
-                        return aId.localeCompare(bId, undefined, { numeric: true });
-                    });
-
-                return {
-                    storeId: storeId,
-                    storeName: storeName,
-                    storeRowIndex: storeObj ? storeObj.data._rowIndex : null,
-                    daysBefore: storeObj ? (storeObj.data.daysBefore || '') : '',
-                    prompt: storeObj ? (storeObj.data.prompt || '') : '',
-                    staff: staffList.map(l => ({
-                        rowIndex: l.data._rowIndex,
-                        storeId: l.data.storeId,
-                        lineId: l.data.lineId || '',
-                        name: l.data.name || '',
-                        displayName: l.data.displayName || '',
-                        employeeId: l.data.employeeId || '',
-                        password: l.data.password || '',
-                        shiftRequest: l.data.shiftRequest || '',
-                        isManager: l.data.isManager || false,
-                        isActive: l.data.isActive || false
-                    }))
-                };
-            });
-
-            // ユーザー名
-            const me = Models.User.find(userId);
-            template.managerName = me ? (me.data.name || '') : '';
-
-            // SST選択肢
-            template.sstOptions = Object.values(Settings.SST);
-
-            return template.evaluate()
-                .setTitle("店舗管理")
-                .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-        }
-
-        // シフト編集ページ（管理者・マネージャー向け）
-        if (page === 'shiftEdit') {
-            const template = HtmlService.createTemplateFromFile("app/templates/shiftEdit");
-            template.userId = userId;
-            return template.evaluate()
-                .setTitle("シフト編集")
-                .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-        }
-
-        // デフォルト: ユーザー登録画面
-        const template = HtmlService.createTemplateFromFile("app/templates/register");
-        template.liffId = Settings.LIFF_ID;
-        template.userId = userId;
-        template.stores = Models.Store.getActive();
-        Utils.log(`DEBUG: Passing ${template.stores.length} stores to template.`);
-        template.sstOptions = Object.values(Settings.SST);
-
-        // 既存ユーザーデータの取得（編集モード用）
-        if (template.userId) {
-            const user = Models.User.find(template.userId);
-            if (user) {
-                template.userData = user.data;
-                // 複数店舗リストを渡す
-                const links = Models.ByStore.filterByLineId(template.userId);
-                template.userStores = links.map(l => l.data);
-            }
-        }
-
-        return template.evaluate()
-            .setTitle("ユーザー登録")
+        // GAS側のURLを直接開いたユーザー向けのフォールバックリダイレクトHTML
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta http-equiv="refresh" content="0; url=${redirectUrl}">
+                <title>Redirecting...</title>
+            </head>
+            <body>
+                <p>LINEアプリ（またはブラウザ）にリダイレクトしています...</p>
+                <p>自動的に遷移しない場合は、<a href="${redirectUrl}">こちらをクリック</a>してください。</p>
+            </body>
+            </html>
+        `;
+        return HtmlService.createHtmlOutput(html)
+            .setTitle("リダイレクト")
             .addMetaTag('viewport', 'width=device-width, initial-scale=1');
     },
 
