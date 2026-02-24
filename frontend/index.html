@@ -76,12 +76,11 @@
                             const urlParams = new URLSearchParams(window.location.search);
                             const page = urlParams.get('page');
 
-                            // ページクエリがregisterならリダイレクト（本来はサーバーサイドで処理されるはずだが、念のため）
-                            if (page === 'register') {
-                                // 既にregisterページにいるはずだが、もしindexに来てしまった場合
-                                // location.replace("?page=register");
-                                // 無限ループの危険があるので一旦コメントアウト
-                                debugEl.innerHTML += "Page param is register but loaded index.<br>";
+                            // ページ指定があれば、対応するHTMLファイルへリダイレクト
+                            if (page) {
+                                // .htmlを付与してリダイレクト（例: ?page=register -> register.html?page=register）
+                                window.location.replace('./' + page + '.html' + window.location.search);
+                                return; // 処理を終了
                             }
 
                             // LIFFのコンテキスト確認
