@@ -106,6 +106,15 @@ const Settings = {
     }
   },
 
+  // ユーザー向けフロントエンドのベースURL (LIFF URLを優先)
+  get FRONTEND_BASE_URL() {
+    const liffUrl = PropertiesService.getScriptProperties().getProperty('LIFF_URL');
+    if (liffUrl) {
+      return liffUrl.endsWith('/') ? liffUrl.slice(0, -1) : liffUrl;
+    }
+    // LIFF URLが無い場合はGASのURLをフォールバックとして使用
+    return this.WEB_APP_URL;
+  },
 
   // ============================== GitHub連携 ==============================
 
