@@ -51,6 +51,13 @@ const Settings = {
         description: 'デプロイ先のリポジトリ名 (例: MaskRom/line_store_manager)',
         required: false,
         defaultValue: ''
+      },
+      {
+        key: 'LIFF_URL',
+        name: 'LIFF URL',
+        description: 'LINE Notify等で送信するベースURL (例: https://liff.line.me/1234567890-AbCdEfGh)',
+        required: false,
+        defaultValue: ''
       }
     ]
   },

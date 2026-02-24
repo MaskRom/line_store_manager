@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kurenaido&display=swap"
         rel="stylesheet">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="./config.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         /* 文字選択不可設定 */
@@ -2413,6 +2415,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await liff.init({ liffId: CONFIG.LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                const profile = await liff.getProfile();
+                window.currentUserId = profile.userId;
+            } catch (err) {
+                console.error("LIFF SDK Init failed", err);
+            }
+
             await loadAppData();
             if (!APP_DATA.shifts) return;
 

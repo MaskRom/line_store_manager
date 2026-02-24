@@ -141,7 +141,7 @@ const EventHandler = {
             return;
         }
 
-        const storeUrl = `${Settings.WEB_APP_URL}?page=store&userId=${userId}`;
+        const storeUrl = `${Settings.FRONTEND_BASE_URL}?page=admin`;
 
         const flexMessage = {
             type: 'flex',
@@ -190,7 +190,7 @@ const EventHandler = {
     handleStaffSettings: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
-        const registrationUrl = `${Settings.WEB_APP_URL}?userId=${userId}`;
+        const registrationUrl = `${Settings.FRONTEND_BASE_URL}?page=register`;
 
         const flexMessage = {
             type: 'flex',
@@ -258,7 +258,7 @@ const EventHandler = {
     handleShiftRequest: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
-        const shiftUrl = `${Settings.WEB_APP_URL}?page=shift&userId=${userId}`;
+        const shiftUrl = `${Settings.FRONTEND_BASE_URL}?page=shift`;
 
         const flexMessage = {
             type: 'flex',
@@ -320,7 +320,7 @@ const EventHandler = {
     handleShiftEdit: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
-        const shiftEditUrl = `${Settings.WEB_APP_URL}?page=shiftEdit&userId=${userId}`;
+        const shiftEditUrl = `${Settings.FRONTEND_BASE_URL}?page=shiftEdit`;
 
         const flexMessage = {
             type: 'flex',
@@ -394,7 +394,7 @@ const EventHandler = {
             }
 
             // 友だち追加のウェルカムメッセージ(Flex Message)
-            const registrationUrl = `${Settings.WEB_APP_URL}?userId=${userId}`;
+            const registrationUrl = `${Settings.FRONTEND_BASE_URL}?page=register`;
             Utils.log(`INFO: Registration URL generated: ${registrationUrl}`);
 
             const flexMessage = {
