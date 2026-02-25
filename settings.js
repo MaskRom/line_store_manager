@@ -94,12 +94,17 @@ const Settings = {
   get WEB_APP_URL() {
     // 動的にWeb App URLを取得（デプロイ後は自動的に正しいURLを返す）
     try {
-      return ScriptApp.getService().getUrl();
+      let url = ScriptApp.getService().getUrl();
+      // エディタ上から実行されると /dev になってしまいCORSエラーの原因になるため強制変換
+      if (url.endsWith('/dev')) {
+        url = url.replace(/\/dev$/, '/exec');
+      }
+      return url;
     } catch (e) {
       // フォールバック: 手動設定されたURL
       const manualUrl = PropertiesService.getScriptProperties().getProperty('WEB_APP_URL');
       if (manualUrl) {
-        return manualUrl;
+        return manualUrl.replace(/\/dev$/, '/exec');
       }
       // 最後のフォールバック（既存のハードコードURL）
       return 'https://script.google.com/macros/s/AKfycbz_a0u7STmWNuOwu4j9eVsqMFrlpfqviefGHyXvCaNwVP_uVH9TavC9jNoJo1OY73F9/exec';
