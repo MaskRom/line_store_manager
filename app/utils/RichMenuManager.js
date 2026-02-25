@@ -165,14 +165,14 @@ const RichMenuManager = {
                 annotations.push({
                     type: 'line', mode: 'vertical', scaleID: 'x-axis-1',
                     value: (l.value / width) * 100,
-                    borderColor: '#DDDDDD', borderWidth: 2,
+                    borderColor: '#CCCCCC', borderWidth: 3,
                     yMin: 0, yMax: 100
                 });
             } else {
                 annotations.push({
                     type: 'line', mode: 'horizontal', scaleID: 'y-axis-1',
                     value: ((height - l.value) / height) * 100,
-                    borderColor: '#DDDDDD', borderWidth: 2,
+                    borderColor: '#CCCCCC', borderWidth: 3,
                     xMin: 0, xMax: 100
                 });
             }
@@ -188,32 +188,11 @@ const RichMenuManager = {
                 "data": {
                     "datasets": [
                         {
-                            // ボタン 絵文字アイコン層 (上寄り)
+                            // ボタン アイコン層 (上寄り)
                             "data": points.map(function (p) {
                                 // 1列か2列かでアイコンの位置を微調整
                                 var yOffset = height === 405 ? 12 : 7;
                                 return { x: p.x, y: p.y + yOffset, label: p.label };
-                            }),
-                            "pointRadius": 0,
-                            "datalabels": {
-                                "color": "#000000",
-                                "font": { "size": height === 405 ? 65 : 60 },
-                                "formatter": function (v) {
-                                    var icons = {
-                                        "ユーザー登録": "📝", "情報編集": "⚙️", "休み希望": "📅", "シフト確認": "🔍",
-                                        "シフト": "🕐", "店舗": "🏪", "店舗追加・削除": "🏠", "開発者ページ": "💻"
-                                    };
-                                    return icons[v.label] || "❓";
-                                },
-                                "align": "center",
-                                "anchor": "center"
-                            }
-                        },
-                        {
-                            // ボタン 日本語テキスト層 (下寄り)
-                            "data": points.map(function (p) {
-                                var yOffset = height === 405 ? 15 : 9;
-                                return { x: p.x, y: p.y - yOffset, label: p.label };
                             }),
                             "pointRadius": 0,
                             "datalabels": {
@@ -222,9 +201,30 @@ const RichMenuManager = {
                                         "ユーザー登録": "#4A86E8", "情報編集": "#4A86E8", "休み希望": "#57BB8A", "シフト確認": "#4A86E8",
                                         "シフト": "#F6B26B", "店舗": "#E67C73", "店舗追加・削除": "#A64D79", "開発者ページ": "#333333"
                                     };
-                                    return colors[ctx.chart.data.datasets[1].data[ctx.dataIndex].label] || "#333333";
+                                    return colors[ctx.chart.data.datasets[0].data[ctx.dataIndex].label] || "#333333";
                                 },
-                                "font": { "size": height === 405 ? 36 : 30, "weight": "bold" },
+                                "font": { "family": "Font Awesome 5 Free", "weight": "900", "size": height === 405 ? 75 : 65 },
+                                "formatter": function (v) {
+                                    var icons = {
+                                        "ユーザー登録": "\uf234", "情報編集": "\uf044", "休み希望": "\uf133", "シフト確認": "\uf002",
+                                        "シフト": "\uf017", "店舗": "\uf54f", "店舗追加・削除": "\uf015", "開発者ページ": "\uf121"
+                                    };
+                                    return icons[v.label] || "\uf059";
+                                },
+                                "align": "center",
+                                "anchor": "center"
+                            }
+                        },
+                        {
+                            // ボタン 日本語テキスト層 (下寄り)
+                            "data": points.map(function (p) {
+                                var yOffset = height === 405 ? 18 : 12;
+                                return { x: p.x, y: p.y - yOffset, label: p.label };
+                            }),
+                            "pointRadius": 0,
+                            "datalabels": {
+                                "color": "#333333",
+                                "font": { "size": height === 405 ? 32 : 26, "weight": "bold" },
                                 "formatter": function (v) { return v.label; },
                                 "align": "center",
                                 "anchor": "center"
@@ -236,8 +236,8 @@ const RichMenuManager = {
                     "layout": { "padding": 0 },
                     "legend": { "display": false },
                     "scales": {
-                        "xAxes": [{ "display": false, "ticks": { "min": 0, "max": 100 } }],
-                        "yAxes": [{ "display": false, "ticks": { "min": 0, "max": 100 } }]
+                        "xAxes": [{ "id": "x-axis-1", "display": false, "ticks": { "min": 0, "max": 100 } }],
+                        "yAxes": [{ "id": "y-axis-1", "display": false, "ticks": { "min": 0, "max": 100 } }]
                     },
                     "plugins": {
                         "datalabels": { "display": true },
