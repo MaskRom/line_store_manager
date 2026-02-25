@@ -154,7 +154,7 @@ const RichMenuManager = {
         var points = areas.map(function (area) {
             var cx = (area.bounds.x + area.bounds.width / 2) / width * 100;
             var cy = (height - (area.bounds.y + area.bounds.height / 2)) / height * 100;
-            return { x: cx, y: cy, label: area.action.label || area.action.text || "" };
+            return { x: cx, y: cy, label: area.action.label || area.action.text || "", area: area };
         });
 
         var annotations = [];
@@ -192,8 +192,8 @@ const RichMenuManager = {
                             "data": points.map(function (p) {
                                 // 1列か2列かでアイコンの上下位置を微調整, xは左端から一定のパディング
                                 var yOffset = height === 405 ? 12 : 7;
-                                // 左端から約15%の位置にアイコンを配置
-                                var customX = (p.area.bounds.x / width * 100) + 15;
+                                // ボタンの左端Xから画面全体の幅の 8% ほど右にずらした位置を基準にする
+                                var customX = (p.area.bounds.x / width * 100) + 8;
                                 return { x: customX, y: p.y + yOffset, label: p.label };
                             }),
                             "pointRadius": 0,
@@ -213,7 +213,7 @@ const RichMenuManager = {
                                     };
                                     return icons[v.label] || "\uf059";
                                 },
-                                "align": "center",
+                                "align": "right",
                                 "anchor": "center"
                             }
                         },
@@ -222,7 +222,7 @@ const RichMenuManager = {
                             "data": points.map(function (p) {
                                 var yOffset = height === 405 ? 18 : 12;
                                 // アイコンと同じx軸のパディング
-                                var customX = (p.area.bounds.x / width * 100) + 15;
+                                var customX = (p.area.bounds.x / width * 100) + 8;
                                 return { x: customX, y: p.y - yOffset, label: p.label };
                             }),
                             "pointRadius": 0,
@@ -230,7 +230,7 @@ const RichMenuManager = {
                                 "color": "#333333",
                                 "font": { "size": height === 405 ? 32 : 26, "weight": "bold" },
                                 "formatter": function (v) { return v.label; },
-                                "align": "center",
+                                "align": "right",
                                 "anchor": "center"
                             }
                         }
