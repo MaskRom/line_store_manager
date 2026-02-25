@@ -497,12 +497,7 @@ const App = {
 
 function doGet(e) { return App.doGet(e); }
 function doPost(e) { return App.doPost(e); }
-function processRegistration(formData) { return App.processRegistration(formData); }
-function saveShiftRequest(formData) { return App.saveShiftRequest(formData); }
-function saveStoreStaff(data) { return App.saveStoreStaff(data); }
-function deleteStoreStaff(data) { return App.deleteStoreStaff(data); }
-function unlinkStaffLineId(data) { return App.unlinkStaffLineId(data); }
-function saveStoreSettings(data) { return App.saveStoreSettings(data); }
+
 
 /**
  * スプレッドシート編集トリガー (Installable onEdit)
