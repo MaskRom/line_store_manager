@@ -67,11 +67,21 @@ const App = {
                 data = { userId, stores };
 
             } else if (page === 'admin') {
-                const myLinks = userId ? Models.ByStore.filterByLineId(userId) : [];
-                const managerLinks = myLinks.filter(
-                    l => l.data.isManager === true || l.data.isManager === 'TRUE' || l.data.isManager === 1
-                );
-                const managerStoreIds = managerLinks.map(l => String(l.data.storeId));
+                const me = Models.User.find(userId);
+                const managerName = me ? (me.data.name || '') : '';
+                const userRole = me ? (Number(me.data.role) || 0) : 0;
+
+                let managerStoreIds = [];
+                if (userRole >= 4) {
+                    const allStores = Models.Store.getActive();
+                    managerStoreIds = allStores.map(s => String(s.id));
+                } else {
+                    const myLinks = userId ? Models.ByStore.filterByLineId(userId) : [];
+                    const managerLinks = myLinks.filter(
+                        l => l.data.isManager === true || l.data.isManager === 'TRUE' || l.data.isManager === 1
+                    );
+                    managerStoreIds = managerLinks.map(l => String(l.data.storeId));
+                }
 
                 const managedStores = managerStoreIds.map(storeId => {
                     const storeObj = Models.Store.objects.get({ id: storeId });
@@ -105,8 +115,6 @@ const App = {
                     };
                 });
 
-                const me = Models.User.find(userId);
-                const managerName = me ? (me.data.name || '') : '';
                 const sstOptions = Object.values(Settings.SST);
 
                 data = { userId, managerName, managedStores, sstOptions };
@@ -208,6 +216,25 @@ const App = {
         }
 
         return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    },
+
+    /**
+     * 店舗を操作する権限があるかチェック
+     */
+    hasStorePermission: (requesterId, targetStoreId) => {
+        if (!requesterId) return false;
+        const user = Models.User.find(requesterId);
+        if (!user) return false;
+
+        const role = Number(user.data.role) || 0;
+        if (role >= 4) return true;
+
+        const links = Models.ByStore.filterByLineId(requesterId);
+        const managerLink = links.find(l =>
+            String(l.data.storeId) === String(targetStoreId) &&
+            (l.data.isManager === true || l.data.isManager === 'TRUE' || l.data.isManager === 1)
+        );
+        return !!managerLink;
     },
 
     /**
@@ -316,7 +343,12 @@ const App = {
      */
     saveStoreStaff: (data) => {
         try {
-            const { storeId, rowIndex, employeeId, password, name, displayName, isManager, isActive, shiftRequest } = data;
+            const { storeId, rowIndex, employeeId, password, name, displayName, isManager, isActive, shiftRequest, requesterId } = data;
+
+            if (!App.hasStorePermission(requesterId, storeId)) {
+                return { success: false, message: 'この店舗のスタッフ情報を編集する権限がありません' };
+            }
+
             const all = Models.ByStore.objects.all();
 
             // ===== 従業員ID重複チェック（同一店舗内） =====
@@ -392,6 +424,10 @@ const App = {
             const target = all.find(r => r.data._rowIndex === Number(rowIndex));
             if (!target) return { success: false, message: '対象行が見つかりません' };
 
+            if (!App.hasStorePermission(requesterId, target.data.storeId)) {
+                return { success: false, message: 'このスタッフ情報を削除する権限がありません' };
+            }
+
             // 自分自身は削除不可
             if (requesterId && target.data.lineId && target.data.lineId === requesterId) {
                 return { success: false, message: '自分自身を削除することはできません' };
@@ -412,10 +448,14 @@ const App = {
      */
     unlinkStaffLineId: (data) => {
         try {
-            const { rowIndex } = data;
+            const { rowIndex, requesterId } = data;
             const all = Models.ByStore.objects.all();
             const target = all.find(r => r.data._rowIndex === Number(rowIndex));
             if (!target) return { success: false, message: '対象行が見つかりません' };
+
+            if (!App.hasStorePermission(requesterId, target.data.storeId)) {
+                return { success: false, message: 'このスタッフのLINE連携を解除する権限がありません' };
+            }
 
             target.data.lineId = '';
             target.save();
@@ -433,10 +473,14 @@ const App = {
      */
     saveStoreSettings: (data) => {
         try {
-            const { storeRowIndex, daysBefore, prompt } = data;
+            const { storeRowIndex, daysBefore, prompt, requesterId } = data;
             const all = Models.Store.objects.all();
             const target = all.find(r => r.data._rowIndex === Number(storeRowIndex));
             if (!target) return { success: false, message: '店舗データが見つかりません' };
+
+            if (!App.hasStorePermission(requesterId, target.data.id)) {
+                return { success: false, message: 'この店舗の設定を保存する権限がありません' };
+            }
 
             target.data.daysBefore = daysBefore;
             target.data.prompt = prompt;
