@@ -247,18 +247,20 @@
         let storesData = [];
         let userId = "";
 
-        function updateHeader(title, userName, userRole) {
+        function updateHeader(title, userName, roleNum, roleConfig) {
             const pageTitle = document.getElementById('pageTitle');
             const userNameEl = document.getElementById('userName');
             const userRoleEl = document.getElementById('userRole');
             if (pageTitle) pageTitle.textContent = title;
             if (userNameEl) userNameEl.textContent = userName;
             if (userRoleEl) {
-                userRoleEl.textContent = userRole;
-                let badgeClass = 'role-badge-default';
-                if (userRole.includes('管理')) badgeClass = 'role-badge-admin';
-                else if (userRole.includes('スタッフ')) badgeClass = 'role-badge-staff';
-                userRoleEl.className = 'role-badge ' + badgeClass;
+                if (roleConfig && roleConfig[roleNum]) {
+                    userRoleEl.textContent = roleConfig[roleNum].name;
+                    userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
+                } else {
+                    userRoleEl.textContent = '未設定';
+                    userRoleEl.className = 'role-badge role-badge-gray';
+                }
             }
         }
 
@@ -286,7 +288,7 @@
                 if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
                     console.log('Running in local/mock mode, skipping LIFF init.');
                     userId = 'U_dummy_local_user';
-                    updateHeader('シフト希望', 'ローカルユーザー', '管理者');
+                    updateHeader('シフト希望', 'ローカルユーザー', 4, null);
                     await fetchShiftData(userId);
                     return;
                 }
@@ -309,7 +311,7 @@
             } catch (err) {
                 console.error('LIFF Initialization failed', err);
                 showToast('LIFFの初期化に失敗しました。', 'error');
-                updateHeader('シフト希望', 'エラー', '未設定');
+                updateHeader('シフト希望', 'エラー', 0, null);
             }
         };
 
@@ -322,14 +324,11 @@
                 storesData = data.stores || [];
                 document.getElementById('loadingOverlay').classList.remove('show');
 
-                let currentRole = 'スタッフ';
-                if (data.userData && data.userData.isManager) {
-                    currentRole = '管理者';
-                }
+                const roleNum = data.userData ? data.userData.role : 0;
                 liff.getProfile().then(profile => {
-                    updateHeader('シフト希望', profile.displayName, currentRole);
+                    updateHeader('シフト希望', profile.displayName, roleNum, data.roleConfig);
                 }).catch(() => {
-                    updateHeader('シフト希望', data.userData ? data.userData.name : 'ユーザー', currentRole);
+                    updateHeader('シフト希望', data.userData ? data.userData.name : 'ユーザー', roleNum, data.roleConfig);
                 });
 
                 renderUI();
@@ -337,7 +336,7 @@
                 console.error('Failed to fetch shift data:', error);
                 document.getElementById('loadingOverlay').classList.remove('show');
                 showToast('データの取得に失敗しました。', 'error');
-                updateHeader('シフト希望', 'エラー', '未設定');
+                updateHeader('シフト希望', 'エラー', 0, null);
             }
         }
 

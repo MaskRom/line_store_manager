@@ -581,18 +581,20 @@
         let managerName = '';
         let managedStores = [];
 
-        function updateHeader(title, userName, userRole) {
+        function updateHeader(title, userName, roleNum, roleConfig) {
             const pageTitle = document.getElementById('pageTitle');
             const userNameEl = document.getElementById('userName');
             const userRoleEl = document.getElementById('userRole');
             if (pageTitle) pageTitle.textContent = title;
             if (userNameEl) userNameEl.textContent = userName;
             if (userRoleEl) {
-                userRoleEl.textContent = userRole;
-                let badgeClass = 'role-badge-default';
-                if (userRole.includes('管理')) badgeClass = 'role-badge-admin';
-                else if (userRole.includes('スタッフ')) badgeClass = 'role-badge-staff';
-                userRoleEl.className = 'role-badge ' + badgeClass;
+                if (roleConfig && roleConfig[roleNum]) {
+                    userRoleEl.textContent = roleConfig[roleNum].name;
+                    userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
+                } else {
+                    userRoleEl.textContent = '未設定';
+                    userRoleEl.className = 'role-badge role-badge-gray';
+                }
             }
         }
 
@@ -602,7 +604,7 @@
                 if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
                     console.log('Running in local/mock mode, skipping LIFF init.');
                     currentUserId = 'U_dummy_local_user';
-                    updateHeader('店舗管理', 'ローカルユーザー', '管理者');
+                    updateHeader('店舗管理', 'ローカルユーザー', 4, null);
                     await fetchAdminData(currentUserId);
                     return;
                 }
@@ -619,7 +621,7 @@
             } catch (err) {
                 console.error('LIFF init failed', err);
                 showToast('LIFFの初期化に失敗しました。', 'error');
-                updateHeader('店舗管理', 'エラー', '未設定');
+                updateHeader('店舗管理', 'エラー', 0, null);
             }
         };
 
@@ -639,7 +641,7 @@
                 managerName = data.managerName;
                 managedStores = data.managedStores;
 
-                updateHeader('店舗管理', managerName, '管理者');
+                updateHeader('店舗管理', managerName, 4, data.roleConfig);
 
                 renderAdminUI();
                 hideLoading();
@@ -647,7 +649,7 @@
                 console.error(e);
                 hideLoading();
                 showToast('データの取得に失敗しました。', 'error');
-                updateHeader('店舗管理', 'エラー', '未設定');
+                updateHeader('店舗管理', 'エラー', 0, null);
             }
         }
 

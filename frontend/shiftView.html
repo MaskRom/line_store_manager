@@ -63,22 +63,48 @@
     </div>
 
     <script>
+        function updateHeader(title, userName, roleNum, roleConfig) {
+            const pageTitle = document.getElementById('pageTitle');
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            if (pageTitle) pageTitle.textContent = title;
+            if (userNameEl) userNameEl.textContent = userName;
+            if (userRoleEl) {
+                if (roleConfig && roleConfig[roleNum]) {
+                    userRoleEl.textContent = roleConfig[roleNum].name;
+                    userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
+                } else {
+                    userRoleEl.textContent = '未設定';
+                    userRoleEl.className = 'role-badge role-badge-gray';
+                }
+            }
+        }
+
         window.onload = async function () {
             try {
+                let userId = null;
+                let displayName = 'ローカルユーザー';
+
                 if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
-                    document.getElementById('userName').textContent = 'ローカルユーザー';
-                    document.getElementById('userRole').textContent = 'スタッフ';
-                    document.getElementById('userRole').className = 'role-badge role-badge-staff';
-                    return;
+                    userId = 'U_dummy_local_user';
+                } else {
+                    await liff.init({ liffId: CONFIG.LIFF_ID });
+                    if (!liff.isLoggedIn()) { liff.login(); return; }
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                    displayName = profile.displayName;
                 }
-                await liff.init({ liffId: CONFIG.LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                const profile = await liff.getProfile();
-                document.getElementById('userName').textContent = profile.displayName;
-                document.getElementById('userRole').textContent = 'スタッフ';
-                document.getElementById('userRole').className = 'role-badge role-badge-staff';
+
+                // Fetch user data and role config from API
+                const res = await fetch(`${CONFIG.API_URL}?page=shiftView&userId=${userId}&api=true`);
+                const data = await res.json();
+
+                const roleNum = data.userData ? data.userData.role : (userId === 'U_dummy_local_user' ? 4 : 0);
+                updateHeader('シフト確認', displayName, roleNum, data.roleConfig);
+
             } catch (e) {
                 console.error(e);
+                updateHeader('シフト確認', 'エラー', 0, null);
             }
         };
     </script>

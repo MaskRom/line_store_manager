@@ -131,6 +131,8 @@ const App = {
                 return ContentService.createTextOutput(JSON.stringify({ error: true, message: "Page not found" })).setMimeType(ContentService.MimeType.JSON);
             }
 
+            data.roleConfig = Settings.ROLE_CONFIG;
+
             return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 
         } catch (e) {

@@ -130,19 +130,29 @@ body {
     font-weight: 600;
 }
 
-.role-badge-admin {
-    background-color: #dbeafe;
-    color: #1d4ed8;
+.role-badge-gray {
+    background-color: #f1f5f9;
+    color: #64748b;
 }
 
-.role-badge-staff {
+.role-badge-green {
     background-color: #dcfce7;
     color: #16a34a;
 }
 
-.role-badge-default {
-    background-color: #f1f5f9;
-    color: #64748b;
+.role-badge-blue {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.role-badge-red {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.role-badge-black {
+    background-color: #e5e7eb;
+    color: #111827;
 }
 
 .common-footer {

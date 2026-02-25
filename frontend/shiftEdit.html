@@ -2410,18 +2410,20 @@
             container.innerHTML = html;
         }
 
-        function updateHeader(title, userName, userRole) {
+        function updateHeader(title, userName, roleNum, roleConfig) {
             const pageTitle = document.getElementById('pageTitle');
             const userNameEl = document.getElementById('userName');
             const userRoleEl = document.getElementById('userRole');
             if (pageTitle) pageTitle.textContent = title;
             if (userNameEl) userNameEl.textContent = userName;
             if (userRoleEl) {
-                userRoleEl.textContent = userRole;
-                let badgeClass = 'role-badge-default';
-                if (userRole.includes('管理')) badgeClass = 'role-badge-admin';
-                else if (userRole.includes('スタッフ')) badgeClass = 'role-badge-staff';
-                userRoleEl.className = 'role-badge ' + badgeClass;
+                if (roleConfig && roleConfig[roleNum]) {
+                    userRoleEl.textContent = roleConfig[roleNum].name;
+                    userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
+                } else {
+                    userRoleEl.textContent = '未設定';
+                    userRoleEl.className = 'role-badge role-badge-gray';
+                }
             }
         }
 
@@ -2432,7 +2434,7 @@
                 if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
                     console.log('Running in local/mock mode, skipping LIFF init.');
                     window.currentUserId = 'U_dummy_local_user';
-                    updateHeader('シフトエディタ', 'ローカルユーザー', '管理者');
+                    updateHeader('シフトエディタ', 'ローカルユーザー', 4, null);
                     await loadAppData();
                     if (APP_DATA.shifts) {
                         initStoreInfo();
@@ -2456,11 +2458,14 @@
                 const profile = await liff.getProfile();
                 window.currentUserId = profile.userId;
 
-                // 権限チェック (APIがここにないため仮判定)
-                updateHeader('シフトエディタ', profile.displayName, currentRole);
+                let roleNum = 2; // Default to staff
+                if (window.currentUserId === 'U_dummy_local_user') {
+                    roleNum = 4;
+                }
+                updateHeader('シフトエディタ', profile.displayName || 'ユーザー', roleNum, null);
             } catch (err) {
                 console.error("LIFF SDK Init failed", err);
-                updateHeader('シフトエディタ', 'ユーザー', currentRole);
+                updateHeader('シフトエディタ', 'ユーザー', 0, null);
             }
 
             await loadAppData();

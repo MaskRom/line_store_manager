@@ -154,6 +154,16 @@ const Settings = {
     DEV: 5       // デバッグ・開発用
   }),
 
+  // 権限ごとのフロントエンド表示名とCSSクラス
+  ROLE_CONFIG: Object.freeze({
+    0: { name: "権限なし", colorClass: "role-badge-gray" },
+    1: { name: "仮登録", colorClass: "role-badge-gray" },
+    2: { name: "スタッフ", colorClass: "role-badge-green" },
+    3: { name: "責任者", colorClass: "role-badge-blue" },
+    4: { name: "管理者", colorClass: "role-badge-red" },
+    5: { name: "開発者", colorClass: "role-badge-black" }
+  }),
+
   // SST
   SST: Object.freeze({
     TRAINING: "トレーニング中",
