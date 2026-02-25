@@ -86,14 +86,14 @@
         }
 
         const buttonsConfig = {
-            register: { url: './register.html', icon: 'fa-user-edit color-register', label: 'ユーザー登録' },
-            editInfo: { url: './register.html', icon: 'fa-edit color-edit', label: '情報編集' },
-            shiftHope: { url: './shiftHope.html', icon: 'fa-calendar-alt color-hope', label: '休み希望' },
-            shiftView: { url: './shiftView.html', icon: 'fa-search color-view', label: 'シフト確認' },
-            store: { url: './store.html', icon: 'fa-store color-store', label: '店舗' },
-            shiftEdit: { url: './shiftEdit.html', icon: 'fa-clock color-shift', label: 'シフト' },
-            storeManage: { url: './storeManage.html', icon: 'fa-home color-manage', label: '店舗追加・削除' },
-            dev: { url: './dev.html', icon: 'fa-code color-dev', label: '開発者ページ' }
+            register: { url: './staff/register.html', icon: 'fa-user-edit color-register', label: 'ユーザー登録' },
+            editInfo: { url: './staff/register.html', icon: 'fa-edit color-edit', label: '情報編集' },
+            shiftHope: { url: './staff/shiftHope.html', icon: 'fa-calendar-alt color-hope', label: '休み希望' },
+            shiftView: { url: './staff/shiftView.html', icon: 'fa-search color-view', label: 'シフト確認' },
+            store: { url: './manager/store.html', icon: 'fa-store color-store', label: '店舗' },
+            shiftEdit: { url: './manager/shiftEdit.html', icon: 'fa-clock color-shift', label: 'シフト' },
+            storeManage: { url: './admin/storeManage.html', icon: 'fa-home color-manage', label: '店舗追加・削除' },
+            dev: { url: './dev/dev.html', icon: 'fa-code color-dev', label: '開発者ページ' }
         };
 
         function renderMenu(role) {
@@ -134,8 +134,19 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const page = urlParams.get('page');
                 if (page) {
-                    window.location.replace('./' + page + '.html' + window.location.search);
-                    return;
+                    const pageMapping = {
+                        'register': './staff/register.html',
+                        'shiftHope': './staff/shiftHope.html',
+                        'shiftView': './staff/shiftView.html',
+                        'store': './manager/store.html',
+                        'shiftEdit': './manager/shiftEdit.html',
+                        'storeManage': './admin/storeManage.html',
+                        'dev': './dev/dev.html'
+                    };
+                    if (pageMapping[page]) {
+                        window.location.replace(pageMapping[page] + window.location.search);
+                        return;
+                    }
                 }
 
                 let userId = null;
