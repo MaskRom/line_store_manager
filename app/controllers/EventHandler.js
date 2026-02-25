@@ -97,10 +97,6 @@ const EventHandler = {
         const text = event.message.text.trim();
 
         switch (text) {
-            case '[スタッフタブ]':
-            case '[管理者タブ]':
-                EventHandler.handleTabSwitch(event);
-                break;
             case 'ユーザー登録':
             case '情報編集':
             case 'スタッフ設定':
@@ -126,24 +122,6 @@ const EventHandler = {
                 break;
             default:
                 break;
-        }
-    },
-
-    /**
-     * 「[管理者タブ]」「[スタッフタブ]」メッセージを受信してリッチメニューを切り替える
-     */
-    handleTabSwitch: (event) => {
-        const userId = event.source.userId;
-        const text = event.message.text.trim();
-        const tab = text === '[スタッフタブ]' ? 'staff' : 'admin';
-
-        try {
-            const user = Models.User.find(userId);
-            if (user) {
-                RichMenuManager.assignToUser(userId, user.data.role, tab);
-            }
-        } catch (e) {
-            Utils.log(`ERROR: handleTabSwitch - ${e}`);
         }
     },
 
