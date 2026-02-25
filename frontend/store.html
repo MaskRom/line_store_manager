@@ -581,14 +581,22 @@
         let managerName = '';
         let managedStores = [];
 
-        function updateHeader(title, userName, roleNum, roleConfig) {
+        function updateHeader(title, userName, roleNum) {
+            const roleConfig = {
+                0: { name: "権限なし", colorClass: "role-badge-gray" },
+                1: { name: "仮登録", colorClass: "role-badge-gray" },
+                2: { name: "スタッフ", colorClass: "role-badge-green" },
+                3: { name: "責任者", colorClass: "role-badge-blue" },
+                4: { name: "管理者", colorClass: "role-badge-red" },
+                5: { name: "開発者", colorClass: "role-badge-black" }
+            };
             const pageTitle = document.getElementById('pageTitle');
             const userNameEl = document.getElementById('userName');
             const userRoleEl = document.getElementById('userRole');
             if (pageTitle) pageTitle.textContent = title;
             if (userNameEl) userNameEl.textContent = userName;
             if (userRoleEl) {
-                if (roleConfig && roleConfig[roleNum]) {
+                if (roleConfig[roleNum]) {
                     userRoleEl.textContent = roleConfig[roleNum].name;
                     userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
                 } else {
