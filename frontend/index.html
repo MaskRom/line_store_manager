@@ -5,97 +5,166 @@
     <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Shift Management</title>
+    <title>シフト管理アプリ - ホーム</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="./config.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        :root {
+            --theme-color: #06c755;
+        }
+
         body {
-            font-family: sans-serif;
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
+            background: #f0f2f5;
         }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin: 15px 0;
-        }
-
-        a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #00B900;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        a:hover {
-            background-color: #009900;
-        }
-
-        #debug {
-            color: red;
-            font-size: 10px;
-            margin-top: 20px;
-            text-align: left;
+        .main-col {
+            padding-bottom: 40px;
         }
     </style>
 </head>
 
 <body>
-    <h2>シフト管理Bot</h2>
-    <p>メニューを選択してください</p>
+    <div class="common-header">
+        <div class="common-header-inner">
+            <div class="header-left">
+                <!-- No back button on index -->
+                <h1 class="header-title" id="pageTitle">ホーム</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-name" id="userName">読込中...</span>
+                    <span class="role-badge role-badge-gray" id="userRole">確認中</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <ul>
-        <li><a href="?page=register">ユーザー登録・店舗紐付け</a></li>
-    </ul>
+    <!-- Loading -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-weight: bold; color: #333;">読み込み中...</div>
+    </div>
 
-    <div id="debug"></div>
+    <div class="main-col">
+        <div class="menu-grid" id="menuGrid">
+            <!-- Dynamic Buttons will be injected here -->
+        </div>
+    </div>
 
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="./config.js"></script>
+    <div class="common-footer">
+        <div class="common-footer-inner">
+            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
+        </div>
+    </div>
+
     <script>
-        const liffId = CONFIG.LIFF_ID;
-        const debugEl = document.getElementById('debug');
+        function updateHeader(title, userName, roleNum) {
+            const roleConfig = {
+                0: { name: "権限なし", colorClass: "role-badge-gray" },
+                1: { name: "仮登録", colorClass: "role-badge-gray" },
+                2: { name: "スタッフ", colorClass: "role-badge-green" },
+                3: { name: "責任者", colorClass: "role-badge-blue" },
+                4: { name: "管理者", colorClass: "role-badge-red" },
+                5: { name: "開発者", colorClass: "role-badge-black" }
+            };
+            const pageTitle = document.getElementById('pageTitle');
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            if (pageTitle) pageTitle.textContent = title;
+            if (userNameEl) userNameEl.textContent = userName;
+            if (userRoleEl) {
+                if (roleConfig[roleNum]) {
+                    userRoleEl.textContent = roleConfig[roleNum].name;
+                    userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
+                } else {
+                    userRoleEl.textContent = '未設定';
+                    userRoleEl.className = 'role-badge role-badge-gray';
+                }
+            }
+        }
 
-        // エラーハンドラー
-        window.onerror = function (msg, url, line, col, error) {
-            debugEl.innerHTML += `ERROR: ${msg} <br> ${url}:${line}:${col} <br> ${error}<br>`;
+        const buttonsConfig = {
+            register: { url: './register.html', icon: 'fa-user-edit color-register', label: 'ユーザー登録' },
+            editInfo: { url: './register.html', icon: 'fa-edit color-edit', label: '情報編集' },
+            shiftHope: { url: './shiftHope.html', icon: 'fa-calendar-alt color-hope', label: '休み希望' },
+            shiftView: { url: './shiftView.html', icon: 'fa-search color-view', label: 'シフト確認' },
+            store: { url: './store.html', icon: 'fa-store color-store', label: '店舗' },
+            shiftEdit: { url: './shiftEdit.html', icon: 'fa-clock color-shift', label: 'シフト' },
+            storeManage: { url: './storeManage.html', icon: 'fa-home color-manage', label: '店舗追加・削除' },
+            dev: { url: './dev.html', icon: 'fa-code color-dev', label: '開発者ページ' }
         };
 
-        document.addEventListener("DOMContentLoaded", function () {
-            if (liffId) {
-                liff.init({ liffId: liffId })
-                    .then(() => {
-                        if (liff.isLoggedIn()) {
-                            // LIFF URLから開かれた場合、クエリパラメータをチェック
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const page = urlParams.get('page');
+        function renderMenu(role) {
+            const grid = document.getElementById('menuGrid');
+            grid.innerHTML = '';
+            let buttons = [];
 
-                            // ページ指定があれば、対応するHTMLファイルへリダイレクト
-                            if (page) {
-                                // .htmlを付与してリダイレクト（例: ?page=register -> register.html?page=register）
-                                window.location.replace('./' + page + '.html' + window.location.search);
-                                return; // 処理を終了
-                            }
-
-                            // LIFFのコンテキスト確認
-                            // const context = liff.getContext();
-                            // debugEl.innerHTML += "Context: " + JSON.stringify(context) + "<br>";
-                        }
-                    })
-                    .catch((err) => {
-                        debugEl.innerHTML += "LIFF Init Error: " + err + "<br>";
-                    });
-            } else {
-                debugEl.innerHTML += "LIFF ID not set.<br>";
-                // 開発用：URLパラメータからuserId取得を試みる
+            if (role === 1 || role === 0) {
+                buttons = ['register'];
+            } else if (role === 2) {
+                buttons = ['editInfo', 'shiftHope', 'shiftView'];
+            } else if (role === 3) {
+                buttons = ['editInfo', 'shiftHope', 'shiftView', 'store', 'shiftEdit'];
+            } else if (role === 4) {
+                buttons = ['editInfo', 'shiftHope', 'shiftView', 'store', 'shiftEdit', 'storeManage'];
+            } else if (role === 5) {
+                buttons = ['dev'];
             }
-        });
+
+            buttons.forEach(key => {
+                const conf = buttonsConfig[key];
+                const btn = document.createElement('a');
+                btn.href = conf.url;
+                btn.className = 'menu-button';
+                btn.innerHTML = `
+                    <i class="fas ${conf.icon} menu-icon"></i>
+                    <span>${conf.label}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        window.onload = async function () {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('show');
+            try {
+                // LIFF Redirect Check
+                const urlParams = new URLSearchParams(window.location.search);
+                const page = urlParams.get('page');
+                if (page) {
+                    window.location.replace('./' + page + '.html' + window.location.search);
+                    return;
+                }
+
+                let userId = null;
+                let displayName = 'ローカルユーザー';
+
+                if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
+                    userId = 'U_dummy_local_user';
+                } else {
+                    await liff.init({ liffId: CONFIG.LIFF_ID });
+                    if (!liff.isLoggedIn()) { liff.login(); return; }
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                    displayName = profile.displayName;
+                }
+
+                const res = await fetch(`${CONFIG.API_URL}?page=dev&userId=${userId}&api=true`);
+                const data = await res.json();
+
+                const roleNum = data.userData ? data.userData.role : (userId === 'U_dummy_local_user' ? 4 : 0);
+                updateHeader('ホーム', displayName, roleNum);
+                renderMenu(roleNum);
+                overlay.classList.remove('show');
+
+            } catch (e) {
+                console.error(e);
+                updateHeader('エラー', 'エラー発生', 0);
+                overlay.classList.remove('show');
+            }
+        };
     </script>
 </body>
 

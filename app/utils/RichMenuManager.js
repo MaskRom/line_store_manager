@@ -188,11 +188,13 @@ const RichMenuManager = {
                 "data": {
                     "datasets": [
                         {
-                            // ボタン アイコン層 (上寄り)
+                            // ボタン アイコン層 (左寄り, 上下微調整)
                             "data": points.map(function (p) {
-                                // 1列か2列かでアイコンの位置を微調整
+                                // 1列か2列かでアイコンの上下位置を微調整, xは左端から一定のパディング
                                 var yOffset = height === 405 ? 12 : 7;
-                                return { x: p.x, y: p.y + yOffset, label: p.label };
+                                // 左端から約15%の位置にアイコンを配置
+                                var customX = (p.area.bounds.x / width * 100) + 15;
+                                return { x: customX, y: p.y + yOffset, label: p.label };
                             }),
                             "pointRadius": 0,
                             "datalabels": {
@@ -216,10 +218,12 @@ const RichMenuManager = {
                             }
                         },
                         {
-                            // ボタン 日本語テキスト層 (下寄り)
+                            // ボタン 日本語テキスト層 (左寄り, アイコンの下)
                             "data": points.map(function (p) {
                                 var yOffset = height === 405 ? 18 : 12;
-                                return { x: p.x, y: p.y - yOffset, label: p.label };
+                                // アイコンと同じx軸のパディング
+                                var customX = (p.area.bounds.x / width * 100) + 15;
+                                return { x: customX, y: p.y - yOffset, label: p.label };
                             }),
                             "pointRadius": 0,
                             "datalabels": {

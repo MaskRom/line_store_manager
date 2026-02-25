@@ -104,11 +104,104 @@ body {
     align-items: center;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-back-btn {
+    color: #111;
+    text-decoration: none;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.header-back-btn:hover {
+    background-color: #f0f0f0;
+}
+
 .header-title {
     font-size: 18px;
     font-weight: 700;
     color: #111;
     margin: 0;
+}
+
+/* Menu Portal Styles */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.menu-button {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 16px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.menu-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+/* Icon Colors */
+.color-register {
+    color: #4A86E8;
+}
+
+.color-edit {
+    color: #4A86E8;
+}
+
+.color-hope {
+    color: #57BB8A;
+}
+
+.color-view {
+    color: #4A86E8;
+}
+
+.color-shift {
+    color: #F6B26B;
+}
+
+.color-store {
+    color: #E67C73;
+}
+
+.color-manage {
+    color: #A64D79;
+}
+
+.color-dev {
+    color: #333333;
 }
 
 .user-info {
