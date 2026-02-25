@@ -9,19 +9,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --theme-color: #06c755;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f0f2f5;
-            color: #111;
             line-height: 1.5;
-            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -288,47 +284,6 @@
             cursor: not-allowed;
         }
 
-        /* Loading */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            /* 白背景で清潔感  */
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        /* Spinner */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e1e4e8;
-            border-top: 4px solid #06c755;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
 
         /* Success Screen */
         .success-screen {
@@ -473,11 +428,6 @@
             .form-area {
                 padding: 20px;
             }
-        }
-
-        /* Hidden */
-        .hidden {
-            display: none !important;
         }
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -873,10 +823,11 @@
                 const response = await fetch(CONFIG.API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    // actionパラメータを追加してGAS側で判別可能にする
-                    body: JSON.stringify({ action: 'processRegistration', data: formData })
+                    body: new URLSearchParams({
+                        payload: JSON.stringify({ action: 'processRegistration', data: formData })
+                    })
                 });
 
                 const result = await response.json();

@@ -144,7 +144,14 @@ const App = {
      */
     doPost: (e) => {
         try {
-            const data = JSON.parse(e.postData.contents);
+            let data;
+            // フォーム送信（application/x-www-form-urlencoded）からのAPIリクエストの場合
+            if (e.parameter && e.parameter.payload) {
+                data = JSON.parse(e.parameter.payload);
+            } else {
+                // LINE Webhookまたは純粋なJSONリクエストの場合
+                data = JSON.parse(e.postData.contents);
+            }
 
             // Check if it's an API request from the frontend
             if (data.action) {

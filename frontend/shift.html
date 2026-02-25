@@ -7,20 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>シフト希望 - シフト管理Bot</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --theme-color: #57BB8A;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: #f0f2f5;
-            color: #111;
             line-height: 1.5;
-            min-height: 100vh;
         }
 
         /* Header */
@@ -195,65 +190,7 @@
             cursor: not-allowed;
         }
 
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: #333;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 24px;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-            white-space: nowrap;
-        }
 
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.success {
-            background: #57BB8A;
-        }
-
-        .toast.error {
-            background: #e53935;
-        }
-
-        /* Loading */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 500;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e1e4e8;
-            border-top-color: #57BB8A;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
 
         @media (max-width: 600px) {
             body {
@@ -438,8 +375,10 @@
             try {
                 const response = await fetch(CONFIG.API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'saveShiftRequest', data: payload })
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        payload: JSON.stringify({ action: 'saveShiftRequest', data: payload })
+                    })
                 });
 
                 const result = await response.json();
