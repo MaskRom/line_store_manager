@@ -271,12 +271,14 @@ class Store extends BaseModel {
         };
     }
     static getActive() {
-        // すべての店舗を返す（フィルタリングなし）
-        const allStores = this.objects.all().map(s => ({
-            id: s.data.id,
-            name: s.data.name
-        }));
-        Utils.log(`DEBUG: Returning ${allStores.length} stores (all stores, no filter).`);
+        // すべての店舗を返す（空行をフィルタリング）
+        const allStores = this.objects.all()
+            .filter(s => s.data.id && String(s.data.id).trim() !== "")
+            .map(s => ({
+                id: s.data.id,
+                name: s.data.name
+            }));
+        Utils.log(`DEBUG: Returning ${allStores.length} stores (all stores, empty rows filtered).`);
         return allStores;
     }
 }
