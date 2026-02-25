@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>店舗追加・削除</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="./config.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        :root {
+            --theme-color: #A64D79;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .main-col {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="common-header">
+        <div class="common-header-inner">
+            <div class="header-left">
+                <h1 class="header-title" id="pageTitle">店舗追加・削除</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-name" id="userName">ユーザー</span>
+                    <span class="role-badge role-badge-default" id="userRole">未設定</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-col">
+        <div class="card">
+            <h2>店舗追加・削除リクエストページ</h2>
+            <p>※ 現在準備中です</p>
+        </div>
+    </div>
+
+    <div class="common-footer">
+        <div class="common-footer-inner">
+            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        window.onload = async function () {
+            try {
+                if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
+                    document.getElementById('userName').textContent = 'ローカルユーザー';
+                    document.getElementById('userRole').textContent = '管理者';
+                    document.getElementById('userRole').className = 'role-badge role-badge-admin';
+                    return;
+                }
+                await liff.init({ liffId: CONFIG.LIFF_ID });
+                if (!liff.isLoggedIn()) { liff.login(); return; }
+                const profile = await liff.getProfile();
+                document.getElementById('userName').textContent = profile.displayName;
+                document.getElementById('userRole').textContent = '管理者';
+                document.getElementById('userRole').className = 'role-badge role-badge-admin';
+            } catch (e) {
+                console.error(e);
+            }
+        };
+    </script>
+</body>
+
+</html>

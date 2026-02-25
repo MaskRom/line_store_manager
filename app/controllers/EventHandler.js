@@ -7,10 +7,6 @@ const EventHandler = {
      * @param {Object} event - LINE Messaging API event object
      */
     dispatch: (event) => {
-        // Role Check for EVERY event (except follow/unfollow maybe? No, let's check all interactions)
-        // Follow event is special: new users don't have roles yet.
-        // But existing users with Role 0 should be blocked.
-
         const userId = event.source.userId;
         if (userId) {
             const user = Models.User.find(userId);
@@ -101,11 +97,20 @@ const EventHandler = {
         const text = event.message.text.trim();
 
         switch (text) {
+            case '[スタッフタブ]':
+            case '[管理者タブ]':
+                EventHandler.handleTabSwitch(event);
+                break;
+            case 'ユーザー登録':
+            case '情報編集':
             case 'スタッフ設定':
                 EventHandler.handleStaffSettings(event);
                 break;
-            case 'シフト希望':
+            case '休み希望':
                 EventHandler.handleShiftRequest(event);
+                break;
+            case 'シフト確認':
+                EventHandler.handleShiftView(event);
                 break;
             case '店舗':
                 EventHandler.handleStoreManagement(event);
@@ -113,8 +118,32 @@ const EventHandler = {
             case 'シフト':
                 EventHandler.handleShiftEdit(event);
                 break;
+            case '店舗追加・削除':
+                EventHandler.handleStoreManagePage(event);
+                break;
+            case '開発者ページ':
+                EventHandler.handleDevPage(event);
+                break;
             default:
                 break;
+        }
+    },
+
+    /**
+     * 「[管理者タブ]」「[スタッフタブ]」メッセージを受信してリッチメニューを切り替える
+     */
+    handleTabSwitch: (event) => {
+        const userId = event.source.userId;
+        const text = event.message.text.trim();
+        const tab = text === '[スタッフタブ]' ? 'staff' : 'admin';
+
+        try {
+            const user = Models.User.find(userId);
+            if (user) {
+                RichMenuManager.assignToUser(userId, user.data.role, tab);
+            }
+        } catch (e) {
+            Utils.log(`ERROR: handleTabSwitch - ${e}`);
         }
     },
 
@@ -142,7 +171,7 @@ const EventHandler = {
         }
 
         const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
-        const storeUrl = `${baseUrl}/admin.html`;
+        const storeUrl = `${baseUrl}/store.html`;
 
         const flexMessage = {
             type: 'flex',
@@ -186,7 +215,7 @@ const EventHandler = {
     },
 
     /**
-     * 「スタッフ設定」メッセージ受信 → 登録フォームURLを返信
+     * 「ユーザー登録」「情報編集」メッセージ受信 → 登録フォームURLを返信
      */
     handleStaffSettings: (event) => {
         const userId = event.source.userId;
@@ -196,72 +225,51 @@ const EventHandler = {
 
         const flexMessage = {
             type: 'flex',
-            altText: 'スタッフ登録フォーム',
+            altText: 'スタッフ登録・情報編集フォーム',
             contents: {
                 type: 'bubble',
                 header: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [
-                        {
-                            type: 'text',
-                            text: '⚙️ スタッフ設定',
-                            weight: 'bold',
-                            size: 'lg',
-                            color: '#ffffff'
-                        }
-                    ],
-                    backgroundColor: '#4A86E8',
-                    paddingAll: '15px'
+                    type: 'box', layout: 'vertical',
+                    contents: [{
+                        type: 'text', text: '⚙️ 情報編集',
+                        weight: 'bold', size: 'lg', color: '#ffffff'
+                    }],
+                    backgroundColor: '#4A86E8', paddingAll: '15px'
                 },
                 body: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [
-                        {
-                            type: 'text',
-                            text: '下のボタンから登録フォームを開いて、氏名やSST・店舗情報を登録・更新してください。',
-                            wrap: true,
-                            size: 'sm',
-                            color: '#555555'
-                        }
-                    ]
+                    type: 'box', layout: 'vertical',
+                    contents: [{
+                        type: 'text',
+                        text: '下のボタンからフォームを開いて、氏名やSST・店舗情報を登録・更新してください。',
+                        wrap: true, size: 'sm', color: '#555555'
+                    }]
                 },
                 footer: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [
-                        {
-                            type: 'button',
-                            action: {
-                                type: 'uri',
-                                label: '📝 登録フォームを開く',
-                                uri: registrationUrl
-                            },
-                            style: 'primary',
-                            color: '#4A86E8'
-                        }
-                    ]
+                    type: 'box', layout: 'vertical',
+                    contents: [{
+                        type: 'button',
+                        action: { type: 'uri', label: '📝 登録フォームを開く', uri: registrationUrl },
+                        style: 'primary', color: '#4A86E8'
+                    }]
                 }
             }
         };
 
         try {
             Settings.lc.replyMessage(replyToken, flexMessage);
-            Utils.log(`INFO: Staff settings link sent to ${userId}`);
         } catch (e) {
             Utils.log(`ERROR: handleStaffSettings - ${e}`);
         }
     },
 
     /**
-     * 「シフト希望」メッセージ受信 → シフト希望編集フォームURLを返信
+     * 「休み希望」メッセージ受信 → フォームURLを返信
      */
     handleShiftRequest: (event) => {
         const userId = event.source.userId;
         const replyToken = event.replyToken;
         const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
-        const shiftUrl = `${baseUrl}/shift.html`;
+        const shiftUrl = `${baseUrl}/shiftHope.html`;
 
         const flexMessage = {
             type: 'flex',
@@ -269,52 +277,55 @@ const EventHandler = {
             contents: {
                 type: 'bubble',
                 header: {
-                    type: 'box',
-                    layout: 'vertical',
+                    type: 'box', layout: 'vertical',
                     contents: [{
-                        type: 'text',
-                        text: '📅 シフト希望',
-                        weight: 'bold',
-                        size: 'lg',
-                        color: '#ffffff'
+                        type: 'text', text: '📅 休み希望',
+                        weight: 'bold', size: 'lg', color: '#ffffff'
                     }],
-                    backgroundColor: '#57BB8A',
-                    paddingAll: '15px'
+                    backgroundColor: '#57BB8A', paddingAll: '15px'
                 },
                 body: {
-                    type: 'box',
-                    layout: 'vertical',
+                    type: 'box', layout: 'vertical',
                     contents: [{
                         type: 'text',
                         text: 'シフト希望・休み希望を登録・編集できます。',
-                        wrap: true,
-                        size: 'sm',
-                        color: '#555555'
+                        wrap: true, size: 'sm', color: '#555555'
                     }]
                 },
                 footer: {
-                    type: 'box',
-                    layout: 'vertical',
+                    type: 'box', layout: 'vertical',
                     contents: [{
                         type: 'button',
-                        action: {
-                            type: 'uri',
-                            label: '📝 シフト希望を入力する',
-                            uri: shiftUrl
-                        },
-                        style: 'primary',
-                        color: '#57BB8A'
+                        action: { type: 'uri', label: '📝 シフト希望を入力する', uri: shiftUrl },
+                        style: 'primary', color: '#57BB8A'
                     }]
                 }
             }
         };
 
-        try {
-            Settings.lc.replyMessage(replyToken, flexMessage);
-            Utils.log(`INFO: Shift request link sent to ${userId}`);
-        } catch (e) {
-            Utils.log(`ERROR: handleShiftRequest - ${e}`);
-        }
+        try { Settings.lc.replyMessage(replyToken, flexMessage); } catch (e) { Utils.log(`ERROR: - ${e}`); }
+    },
+
+    /**
+     * 「シフト確認」メッセージ受信 → 確認ページURLを返信
+     */
+    handleShiftView: (event) => {
+        const userId = event.source.userId;
+        const replyToken = event.replyToken;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/shiftView.html`;
+
+        const flexMessage = {
+            type: 'flex',
+            altText: 'シフト確認',
+            contents: {
+                type: 'bubble',
+                header: { type: 'box', layout: 'vertical', backgroundColor: '#4A86E8', paddingAll: '15px', contents: [{ type: 'text', text: '🔍 シフト確認', weight: 'bold', size: 'lg', color: '#ffffff' }] },
+                body: { type: 'box', layout: 'vertical', contents: [{ type: 'text', text: '最新のシフトを確認できます。', wrap: true, size: 'sm', color: '#555555' }] },
+                footer: { type: 'box', layout: 'vertical', contents: [{ type: 'button', action: { type: 'uri', label: '🔍 シフト確認を開く', uri: url }, style: 'primary', color: '#4A86E8' }] }
+            }
+        };
+        try { Settings.lc.replyMessage(replyToken, flexMessage); } catch (e) { }
     },
 
     /**
@@ -332,57 +343,68 @@ const EventHandler = {
             contents: {
                 type: 'bubble',
                 header: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [{
-                        type: 'text',
-                        text: '🕐 シフト編集',
-                        weight: 'bold',
-                        size: 'lg',
-                        color: '#ffffff'
-                    }],
-                    backgroundColor: '#F6B26B',
-                    paddingAll: '15px'
+                    type: 'box', layout: 'vertical',
+                    contents: [{ type: 'text', text: '🕐 シフト編集', weight: 'bold', size: 'lg', color: '#ffffff' }],
+                    backgroundColor: '#F6B26B', paddingAll: '15px'
                 },
                 body: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [{
-                        type: 'text',
-                        text: 'シフト表の確認・編集ができます。',
-                        wrap: true,
-                        size: 'sm',
-                        color: '#555555'
-                    }]
+                    type: 'box', layout: 'vertical',
+                    contents: [{ type: 'text', text: 'シフト表の確認・編集ができます。', wrap: true, size: 'sm', color: '#555555' }]
                 },
                 footer: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [{
-                        type: 'button',
-                        action: {
-                            type: 'uri',
-                            label: '🕐 シフト編集を開く',
-                            uri: shiftEditUrl
-                        },
-                        style: 'primary',
-                        color: '#F6B26B'
-                    }]
+                    type: 'box', layout: 'vertical',
+                    contents: [{ type: 'button', action: { type: 'uri', label: '🕐 シフト編集を開く', uri: shiftEditUrl }, style: 'primary', color: '#F6B26B' }]
                 }
             }
         };
 
-        try {
-            Settings.lc.replyMessage(replyToken, flexMessage);
-            Utils.log(`INFO: Shift edit link sent to ${userId}`);
-        } catch (e) {
-            Utils.log(`ERROR: handleShiftEdit - ${e}`);
-        }
+        try { Settings.lc.replyMessage(replyToken, flexMessage); } catch (e) { }
+    },
+
+    /**
+     * 「店舗追加・削除」
+     */
+    handleStoreManagePage: (event) => {
+        const replyToken = event.replyToken;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/storeManage.html`;
+
+        const flexMessage = {
+            type: 'flex',
+            altText: '店舗追加・削除',
+            contents: {
+                type: 'bubble',
+                header: { type: 'box', layout: 'vertical', backgroundColor: '#A64D79', paddingAll: '15px', contents: [{ type: 'text', text: '🏠 店舗追加・削除', weight: 'bold', size: 'lg', color: '#ffffff' }] },
+                body: { type: 'box', layout: 'vertical', contents: [{ type: 'text', text: '店舗の追加や削除などの管理を行います。', wrap: true, size: 'sm', color: '#555555' }] },
+                footer: { type: 'box', layout: 'vertical', contents: [{ type: 'button', action: { type: 'uri', label: '🏠 管理画面を開く', uri: url }, style: 'primary', color: '#A64D79' }] }
+            }
+        };
+        try { Settings.lc.replyMessage(replyToken, flexMessage); } catch (e) { }
+    },
+
+    /**
+     * 「開発者ページ」
+     */
+    handleDevPage: (event) => {
+        const replyToken = event.replyToken;
+        const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/dev.html`;
+
+        const flexMessage = {
+            type: 'flex',
+            altText: '開発者ページ',
+            contents: {
+                type: 'bubble',
+                header: { type: 'box', layout: 'vertical', backgroundColor: '#333333', paddingAll: '15px', contents: [{ type: 'text', text: '💻 開発者用', weight: 'bold', size: 'lg', color: '#ffffff' }] },
+                body: { type: 'box', layout: 'vertical', contents: [{ type: 'text', text: '開発者専用の管理ツールです。', wrap: true, size: 'sm', color: '#555555' }] },
+                footer: { type: 'box', layout: 'vertical', contents: [{ type: 'button', action: { type: 'uri', label: '💻 ページを開く', uri: url }, style: 'primary', color: '#333333' }] }
+            }
+        };
+        try { Settings.lc.replyMessage(replyToken, flexMessage); } catch (e) { }
     },
 
     /**
      * Handle follow event (Friend added/unblocked).
-     * @param {Object} event - LINE Messaging API event object
      */
     handleFollow: (event) => {
         const replyToken = event.replyToken;
@@ -400,7 +422,6 @@ const EventHandler = {
             // 友だち追加のウェルカムメッセージ(Flex Message)
             const baseUrl = Settings.FRONTEND_BASE_URL.replace(/\/$/, '');
             const registrationUrl = `${baseUrl}/register.html`;
-            Utils.log(`INFO: Registration URL generated: ${registrationUrl}`);
 
             const flexMessage = {
                 type: 'flex',
@@ -408,80 +429,35 @@ const EventHandler = {
                 contents: {
                     type: 'bubble',
                     header: {
-                        type: 'box',
-                        layout: 'vertical',
-                        contents: [
-                            {
-                                type: 'text',
-                                text: 'ようこそ！🎉',
-                                weight: 'bold',
-                                size: 'xl',
-                                color: '#ffffff'
-                            }
-                        ],
-                        backgroundColor: '#00b900',
-                        paddingAll: '20px'
+                        type: 'box', layout: 'vertical',
+                        contents: [{ type: 'text', text: 'ようこそ！🎉', weight: 'bold', size: 'xl', color: '#ffffff' }],
+                        backgroundColor: '#00b900', paddingAll: '20px'
                     },
                     body: {
-                        type: 'box',
-                        layout: 'vertical',
+                        type: 'box', layout: 'vertical',
                         contents: [
-                            {
-                                type: 'text',
-                                text: '友だち追加ありがとうございます！',
-                                weight: 'bold',
-                                size: 'md',
-                                wrap: true
-                            },
-                            {
-                                type: 'text',
-                                text: 'シフト管理Botへようこそ。ユーザー登録を行うと、シフト希望の提出や確認ができるようになります。',
-                                size: 'sm',
-                                color: '#666666',
-                                wrap: true,
-                                margin: 'md'
-                            },
-                            {
-                                type: 'text',
-                                text: '下のボタンをタップして登録フォームを開いてください！',
-                                size: 'sm',
-                                color: '#666666',
-                                wrap: true,
-                                margin: 'md'
-                            }
+                            { type: 'text', text: '友だち追加ありがとうございます！', weight: 'bold', size: 'md', wrap: true },
+                            { type: 'text', text: 'シフト管理Botへようこそ。ユーザー登録を行うと、シフト希望の提出や確認ができるようになります。', size: 'sm', color: '#666666', wrap: true, margin: 'md' },
+                            { type: 'text', text: '下のボタンをタップして登録フォームを開いてください！', size: 'sm', color: '#666666', wrap: true, margin: 'md' }
                         ]
                     },
                     footer: {
-                        type: 'box',
-                        layout: 'vertical',
-                        contents: [
-                            {
-                                type: 'button',
-                                action: {
-                                    type: 'uri',
-                                    label: '✨ 登録フォームを開く',
-                                    uri: registrationUrl
-                                },
-                                style: 'primary',
-                                color: '#00b900'
-                            }
-                        ]
+                        type: 'box', layout: 'vertical',
+                        contents: [{
+                            type: 'button',
+                            action: { type: 'uri', label: '✨ 登録フォームを開く', uri: registrationUrl },
+                            style: 'primary', color: '#00b900'
+                        }]
                     }
                 }
             };
 
             Settings.lc.replyMessage(replyToken, flexMessage);
-            Utils.log(`INFO: Follow event handled. Reply sent to ${userId}`);
         } catch (e) {
             Utils.log(`ERROR: Failed to handle follow event - ${e.toString()}`);
             try {
-                Settings.lc.replyMessage(replyToken, {
-                    type: "text",
-                    text: `エラーが発生しました。\n管理者に連絡してください。\n詳細: ${e.toString()}`
-                });
-            } catch (replyError) {
-                Utils.log(`FATAL: Failed to send error reply - ${replyError}`);
-            }
+                Settings.lc.replyMessage(replyToken, { type: "text", text: `エラーが発生しました。\n管理者に連絡してください。\n詳細: ${e.toString()}` });
+            } catch (replyError) { }
         }
     }
 };

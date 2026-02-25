@@ -3,52 +3,59 @@
  * LINE リッチメニューの作成・割り当て・管理
  *
  * 画像生成: QuickChart.io の /chart/create (カスタムJS) を使用
- * デザイン: 白背景、絵文字アイコン＋日本語テキスト（色付き）
+ * デザイン: 白背景、絵文字アイコン＋日本語テキスト（色付き）、上部タブ
  */
 
 const RichMenuManager = {
-    // メニュー設定 (動的にURLを取得するためgetterを使用)
+    // メニュー設定
     get CONFIGS() {
-        // 設定されたフロントエンドベースURL (LIFF URL優先) を取得
-        // 末尾のスラッシュを取り除く（二重スラッシュ防止）
         const baseUrlRaw = Settings.FRONTEND_BASE_URL || "";
         const baseUrl = baseUrlRaw.replace(/\/$/, '');
 
+        // Tab area definitions (top 200px)
+        const tabStaff = { bounds: { x: 0, y: 0, width: 600, height: 200 }, action: { type: "message", text: "[スタッフタブ]" } };
+        const tabAdmin = { bounds: { x: 600, y: 0, width: 600, height: 200 }, action: { type: "message", text: "[管理者タブ]" } };
+
+        // Button area definitions (bottom 610px)
+        const btnRegister = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/register.html`, label: "ユーザー登録" } });
+        const btnEditInfo = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/register.html`, label: "情報編集" } });
+        const btnShiftHope = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/shiftHope.html`, label: "休み希望" } });
+        const btnShiftView = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/shiftView.html`, label: "シフト確認" } });
+
+        const btnStore = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/store.html`, label: "店舗" } });
+        const btnShiftEdit = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html`, label: "シフト" } });
+        const btnStoreManage = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/storeManage.html`, label: "店舗追加・削除" } });
+
+        const btnDev = (x, w) => ({ bounds: { x, y: 200, width: w, height: 610 }, action: { type: "uri", uri: `${baseUrl}/dev.html`, label: "開発者ページ" } });
+
         return {
-            2: {
-                size: { width: 1200, height: 405 },
-                selected: true,
-                name: "Menu_Staff",
-                chatBarText: "メニュー",
-                areas: [
-                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/register.html` } },
-                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shift.html` } },
-                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html` } }
-                ]
+            "1_staff": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_1_Staff", chatBarText: "メニュー", tab: "staff",
+                areas: [tabStaff, tabAdmin, btnRegister(0, 1200)]
             },
-            3: {
-                size: { width: 1200, height: 405 },
-                selected: true,
-                name: "Menu_Manager",
-                chatBarText: "管理者メニュー",
-                areas: [
-                    { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/register.html` } },
-                    { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/admin.html` } },
-                    { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html` } }
-                ]
+            "2_staff": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_2_Staff", chatBarText: "メニュー", tab: "staff",
+                areas: [tabStaff, tabAdmin, btnEditInfo(0, 400), btnShiftHope(400, 400), btnShiftView(800, 400)]
             },
-            4: {
-                size: { width: 1200, height: 810 },
-                selected: true,
-                name: "Menu_Admin",
-                chatBarText: "管理メニュー",
-                areas: [
-                    { bounds: { x: 0, y: 0, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}/register.html` } },
-                    // "店舗追加・削除" は専用LIFFページが無く現状メッセージトリガーのためそのままにする
-                    { bounds: { x: 600, y: 0, width: 600, height: 405 }, action: { type: "message", text: "店舗追加・削除" } },
-                    { bounds: { x: 0, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}/admin.html` } },
-                    { bounds: { x: 600, y: 405, width: 600, height: 405 }, action: { type: "uri", uri: `${baseUrl}/shiftEdit.html` } }
-                ]
+            "3_staff": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_3_Staff", chatBarText: "メニュー", tab: "staff",
+                areas: [tabStaff, tabAdmin, btnEditInfo(0, 400), btnShiftHope(400, 400), btnShiftView(800, 400)]
+            },
+            "3_admin": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_3_Admin", chatBarText: "管理者メニュー", tab: "admin",
+                areas: [tabStaff, tabAdmin, btnStore(0, 600), btnShiftEdit(600, 600)]
+            },
+            "4_staff": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_4_Staff", chatBarText: "メニュー", tab: "staff",
+                areas: [tabStaff, tabAdmin, btnEditInfo(0, 400), btnShiftHope(400, 400), btnShiftView(800, 400)]
+            },
+            "4_admin": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_4_Admin", chatBarText: "管理者メニュー", tab: "admin",
+                areas: [tabStaff, tabAdmin, btnStore(0, 400), btnShiftEdit(400, 400), btnStoreManage(800, 400)]
+            },
+            "5_dev": {
+                size: { width: 1200, height: 810 }, selected: true, name: "Menu_5_Dev", chatBarText: "開発者メニュー", tab: "admin",
+                areas: [tabStaff, tabAdmin, btnDev(0, 1200)]
             }
         };
     },
@@ -58,12 +65,12 @@ const RichMenuManager = {
      */
     resetAll: function () {
         var props = PropertiesService.getScriptProperties();
-        [2, 3, 4].forEach(function (role) {
-            var menuId = props.getProperty('RICH_MENU_' + role);
+        Object.keys(RichMenuManager.CONFIGS).forEach(function (key) {
+            var menuId = props.getProperty('RICH_MENU_' + key);
             if (menuId) {
-                Logger.log('DELETE: Rich Menu Role ' + role + ': ' + menuId);
+                Logger.log('DELETE: Rich Menu ' + key + ': ' + menuId);
                 RichMenuManager.deleteMenu(menuId);
-                props.deleteProperty('RICH_MENU_' + role);
+                props.deleteProperty('RICH_MENU_' + key);
             }
         });
         Logger.log("INFO: All Rich Menus deleted.");
@@ -75,38 +82,38 @@ const RichMenuManager = {
     init: function () {
         var props = PropertiesService.getScriptProperties();
 
-        for (var role in RichMenuManager.CONFIGS) {
-            var existingId = props.getProperty('RICH_MENU_' + role);
+        for (var key in RichMenuManager.CONFIGS) {
+            var existingId = props.getProperty('RICH_MENU_' + key);
             if (existingId) {
-                Logger.log('SKIP: Role ' + role + ' already exists: ' + existingId);
+                Logger.log('SKIP: ' + key + ' already exists: ' + existingId);
                 continue;
             }
 
-            var config = RichMenuManager.CONFIGS[role];
-            Logger.log('CREATE: Rich Menu for Role ' + role + '...');
+            var config = RichMenuManager.CONFIGS[key];
+            Logger.log('CREATE: Rich Menu for ' + key + '...');
 
             var menuId = RichMenuManager.createMenu(config);
             if (!menuId) {
-                Logger.log('ERROR: Failed to create menu for Role ' + role);
+                Logger.log('ERROR: Failed to create menu for ' + key);
                 continue;
             }
 
             // 画像生成
-            Logger.log('GENERATING IMAGE: Role ' + role);
+            Logger.log('GENERATING IMAGE: ' + key);
             var imageBlob = RichMenuManager.generateImage(config);
             if (!imageBlob) {
-                Logger.log('ERROR: Failed to generate image for Role ' + role);
+                Logger.log('ERROR: Failed to generate image for ' + key);
                 RichMenuManager.deleteMenu(menuId);
                 continue;
             }
 
             // 画像アップロード
-            Logger.log('UPLOADING IMAGE: Role ' + role);
+            Logger.log('UPLOADING IMAGE: ' + key);
             if (RichMenuManager.uploadImage(menuId, imageBlob)) {
-                props.setProperty('RICH_MENU_' + role, menuId);
-                Logger.log('SUCCESS: Role ' + role + ' → ' + menuId);
+                props.setProperty('RICH_MENU_' + key, menuId);
+                Logger.log('SUCCESS: ' + key + ' → ' + menuId);
             } else {
-                Logger.log('ERROR: Failed to upload image for Role ' + role);
+                Logger.log('ERROR: Failed to upload image for ' + key);
                 RichMenuManager.deleteMenu(menuId);
             }
         }
@@ -114,29 +121,59 @@ const RichMenuManager = {
 
     /**
      * QuickChart.io の /chart (scatter + 絵文字datalabels) で画像生成
-     * 白背景 + 絵文字アイコン（上） + 色付き日本語テキスト（下）
      */
     generateImage: function (config) {
         var width = config.size.width;
         var height = config.size.height;
         var areas = config.areas;
-        var isFullSize = height > 500;
+        var activeTab = config.tab;
 
-        // 各ボタン中心座標 (Chart.js 座標系: Y軸は下が0→上が100)
-        var points = areas.map(function (area) {
+        // タブ領域(y < 200)を除外したボタン領域
+        var buttonAreas = areas.filter(function (a) { return a.bounds.y >= 200; });
+
+        var points = buttonAreas.map(function (area) {
             var cx = (area.bounds.x + area.bounds.width / 2) / width * 100;
             var cy = (height - (area.bounds.y + area.bounds.height / 2)) / height * 100;
-            return { x: cx, y: cy };
+            return { x: cx, y: cy, label: area.action.label || area.action.text || "" };
         });
 
-        // scatter 用 annotation (パーセント座標に変換)
         var annotations = [];
-        RichMenuManager._generateGridLines(areas, width, height).forEach(function (l) {
+
+        // Tab background (gray for inactive)
+        if (activeTab === "staff") {
+            // Admin tab is inactive
+            annotations.push({
+                type: 'box', xMin: 50, xMax: 100, yMin: (height - 200) / height * 100, yMax: 100,
+                backgroundColor: '#EEEEEE', borderWidth: 0
+            });
+        } else if (activeTab === "admin") {
+            // Staff tab is inactive
+            annotations.push({
+                type: 'box', xMin: 0, xMax: 50, yMin: (height - 200) / height * 100, yMax: 100,
+                backgroundColor: '#EEEEEE', borderWidth: 0
+            });
+        }
+
+        // Tab vertical divider
+        annotations.push({
+            type: 'line', mode: 'vertical', scaleID: 'x-axis-1', value: 50,
+            borderColor: '#DDDDDD', borderWidth: 3, yMin: (height - 200) / height * 100, yMax: 100
+        });
+
+        // Tab horizontal line
+        annotations.push({
+            type: 'line', mode: 'horizontal', scaleID: 'y-axis-1', value: (height - 200) / height * 100,
+            borderColor: '#DDDDDD', borderWidth: 3
+        });
+
+        // Grid lines for buttons
+        RichMenuManager._generateGridLines(buttonAreas, width, height, 200).forEach(function (l) {
             if (l.mode === 'vertical') {
                 annotations.push({
                     type: 'line', mode: 'vertical', scaleID: 'x-axis-1',
                     value: (l.value / width) * 100,
-                    borderColor: '#DDDDDD', borderWidth: 3
+                    borderColor: '#DDDDDD', borderWidth: 3,
+                    yMin: 0, yMax: (height - 200) / height * 100
                 });
             } else {
                 annotations.push({
@@ -157,18 +194,18 @@ const RichMenuManager = {
                 "data": {
                     "datasets": [
                         {
-                            // 絵文字アイコン層 (上寄り)
-                            "data": points.map(function (p, i) {
-                                return { x: p.x, y: p.y + (isFullSize ? 10 : 13), label: areas[i].action.text };
+                            // ボタン 絵文字アイコン層 (上寄り)
+                            "data": points.map(function (p) {
+                                return { x: p.x, y: p.y + 11, label: p.label };
                             }),
                             "pointRadius": 0,
                             "datalabels": {
                                 "color": "#000000",
-                                "font": { "size": isFullSize ? 80 : 60 },
+                                "font": { "size": 60 },
                                 "formatter": function (v) {
                                     var icons = {
-                                        "スタッフ設定": "⚙️", "シフト希望": "📅",
-                                        "シフト": "🕐", "店舗": "🏪", "店舗追加・削除": "🏠"
+                                        "ユーザー登録": "📝", "情報編集": "⚙️", "休み希望": "📅", "シフト確認": "🔍",
+                                        "シフト": "🕐", "店舗": "🏪", "店舗追加・削除": "🏠", "開発者ページ": "💻"
                                     };
                                     return icons[v.label] || "❓";
                                 },
@@ -177,20 +214,40 @@ const RichMenuManager = {
                             }
                         },
                         {
-                            // 日本語テキスト層 (下寄り)
-                            "data": points.map(function (p, i) {
-                                return { x: p.x, y: p.y - (isFullSize ? 10 : 13), label: areas[i].action.text };
+                            // ボタン 日本語テキスト層 (下寄り)
+                            "data": points.map(function (p) {
+                                return { x: p.x, y: p.y - 11, label: p.label };
                             }),
                             "pointRadius": 0,
                             "datalabels": {
                                 "color": function (ctx) {
                                     var colors = {
-                                        "スタッフ設定": "#4A86E8", "シフト希望": "#57BB8A",
-                                        "シフト": "#F6B26B", "店舗": "#E67C73", "店舗追加・削除": "#A64D79"
+                                        "ユーザー登録": "#4A86E8", "情報編集": "#4A86E8", "休み希望": "#57BB8A", "シフト確認": "#4A86E8",
+                                        "シフト": "#F6B26B", "店舗": "#E67C73", "店舗追加・削除": "#A64D79", "開発者ページ": "#333333"
                                     };
                                     return colors[ctx.chart.data.datasets[1].data[ctx.dataIndex].label] || "#333333";
                                 },
-                                "font": { "size": isFullSize ? 38 : 28, "weight": "bold" },
+                                "font": { "size": 32, "weight": "bold" },
+                                "formatter": function (v) { return v.label; },
+                                "align": "center",
+                                "anchor": "center"
+                            }
+                        },
+                        {
+                            // タブ テキスト層
+                            "data": [
+                                { x: 25, y: 88, label: "スタッフ" },
+                                { x: 75, y: 88, label: "管理者" }
+                            ],
+                            "pointRadius": 0,
+                            "datalabels": {
+                                "color": function (ctx) {
+                                    var idx = ctx.dataIndex;
+                                    var isStaffActive = config.tab === "staff";
+                                    if (idx === 0) return isStaffActive ? "#333333" : "#999999";
+                                    return !isStaffActive ? "#333333" : "#999999";
+                                },
+                                "font": { "size": 36, "weight": "bold" },
                                 "formatter": function (v) { return v.label; },
                                 "align": "center",
                                 "anchor": "center"
@@ -235,9 +292,9 @@ const RichMenuManager = {
     },
 
     /**
-     * 区切り線データ生成 (ピクセル座標)
+     * 区切り線データ生成
      */
-    _generateGridLines: function (areas, width, height) {
+    _generateGridLines: function (areas, width, height, startY = 0) {
         var lines = [];
 
         var xCoords = [];
@@ -249,7 +306,7 @@ const RichMenuManager = {
         var yCoords = [];
         areas.forEach(function (a) {
             var bottom = Math.round(a.bounds.y + a.bounds.height);
-            if (bottom < height - 10) yCoords.push(bottom);
+            if (bottom < height - 10 && bottom > startY + 10) yCoords.push(bottom);
         });
 
         function onlyUnique(value, index, self) { return self.indexOf(value) === index; }
@@ -266,10 +323,14 @@ const RichMenuManager = {
         return lines;
     },
 
-    /**
-     * Create Rich Menu via LINE API
-     */
     createMenu: function (config) {
+        // area.action.label はLINE APIには不要なので削除して送る
+        var cleanAreas = config.areas.map(function (area) {
+            var newAction = Object.assign({}, area.action);
+            delete newAction.label;
+            return { bounds: area.bounds, action: newAction };
+        });
+
         var url = 'https://api.line.me/v2/bot/richmenu';
         var res = UrlFetchApp.fetch(url, {
             method: 'post',
@@ -282,7 +343,7 @@ const RichMenuManager = {
                 selected: config.selected,
                 name: config.name,
                 chatBarText: config.chatBarText,
-                areas: config.areas
+                areas: cleanAreas
             }),
             muteHttpExceptions: true
         });
@@ -294,9 +355,6 @@ const RichMenuManager = {
         return null;
     },
 
-    /**
-     * Upload Image to Rich Menu
-     */
     uploadImage: function (richMenuId, imageBlob) {
         var url = 'https://api-data.line.me/v2/bot/richmenu/' + richMenuId + '/content';
         var res = UrlFetchApp.fetch(url, {
@@ -322,16 +380,30 @@ const RichMenuManager = {
         });
     },
 
-    assignToUser: function (userId, role) {
+    assignToUser: function (userId, role, tab = 'staff') {
         if (!userId) {
             Logger.log("ERROR: assignToUser called without userId");
             return;
         }
 
         var props = PropertiesService.getScriptProperties();
-        var menuId = props.getProperty('RICH_MENU_' + role);
 
-        Logger.log("ASSIGN: Attempting to assign Role " + role + " (MenuID: " + menuId + ") to " + userId);
+        let menuKey = `${role}_${tab}`;
+        if (!RichMenuManager.CONFIGS[menuKey]) {
+            if (RichMenuManager.CONFIGS[`${role}_staff`]) {
+                menuKey = `${role}_staff`;
+            } else if (RichMenuManager.CONFIGS[`${role}_dev`]) {
+                menuKey = `${role}_dev`;
+            } else {
+                Logger.log("WARN: No menu found for Role " + role + ". Unlinking user.");
+                RichMenuManager.unlinkUser(userId);
+                return;
+            }
+        }
+
+        var menuId = props.getProperty('RICH_MENU_' + menuKey);
+
+        Logger.log("ASSIGN: Attempting to assign Menu " + menuKey + " (MenuID: " + menuId + ") to " + userId);
 
         if (menuId) {
             var res = UrlFetchApp.fetch(
@@ -348,7 +420,7 @@ const RichMenuManager = {
                 Logger.log('ERROR: Failed to assign menu: ' + res.getContentText());
             }
         } else {
-            Logger.log("WARN: No menu found for Role " + role + ". Unlinking user.");
+            Logger.log("WARN: No menu found for " + menuKey + ". Unlinking user.");
             RichMenuManager.unlinkUser(userId);
         }
     },
