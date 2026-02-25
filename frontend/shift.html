@@ -5,7 +5,7 @@
     <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>シフト希望 - シフト管理Bot</title>
+    <title>シフト希望</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="./style.css">
     <style>
@@ -200,13 +200,11 @@
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
+    <script src="./components.js"></script>
 </head>
 
 <body>
-    <div class="header">
-        <h1>📅 シフト希望</h1>
-        <p>店舗ごとのシフト希望・休み希望を登録</p>
-    </div>
+    <div id="common-header-container"></div>
 
     <!-- コンテナ: データ取得後にJSで中身を描画 -->
     <div id="mainContainer">
@@ -227,6 +225,8 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <div id="common-footer-container"></div>
 
     <script>
         let storesData = [];
@@ -270,6 +270,8 @@
             } catch (err) {
                 console.error('LIFF Initialization failed', err);
                 showToast('LIFFの初期化に失敗しました。', 'error');
+                Components.renderHeader('common-header-container', { title: 'シフト希望', userName: 'エラー', userRole: '未設定' });
+                Components.renderFooter('common-footer-container');
             }
         };
 
@@ -282,11 +284,32 @@
                 storesData = data.stores || [];
                 document.getElementById('loadingOverlay').classList.remove('show');
 
+                let currentRole = 'スタッフ';
+                if (data.userData && data.userData.isManager) {
+                    currentRole = '管理者';
+                }
+                liff.getProfile().then(profile => {
+                    Components.renderHeader('common-header-container', {
+                        title: 'シフト希望',
+                        userName: profile.displayName,
+                        userRole: currentRole
+                    });
+                }).catch(() => {
+                    Components.renderHeader('common-header-container', {
+                        title: 'シフト希望',
+                        userName: data.userData ? data.userData.name : 'ユーザー',
+                        userRole: currentRole
+                    });
+                });
+                Components.renderFooter('common-footer-container');
+
                 renderUI();
             } catch (error) {
                 console.error('Failed to fetch shift data:', error);
                 document.getElementById('loadingOverlay').classList.remove('show');
                 showToast('データの取得に失敗しました。', 'error');
+                Components.renderHeader('common-header-container', { title: 'シフト希望', userName: 'エラー', userRole: '未設定' });
+                Components.renderFooter('common-footer-container');
             }
         }
 

@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>コンビニシフト表</title>
+    <title>シフトエディタ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kurenaido&display=swap"
         rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
+    <script src="./components.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" href="./style.css">
     <style>
@@ -1610,6 +1611,7 @@
 </head>
 
 <body>
+    <div id="common-header-container"></div>
     <div id="json-modal" class="custom-modal">
         <div class="modal-header">
             <h3 class="modal-title">JSONデータ編集</h3>
@@ -1767,22 +1769,6 @@
     </div>
 
     <div id="modal-overlay" class="modal-overlay"></div>
-
-    <div id="full-width-header-wrapper">
-        <div id="full-width-header">
-            <div id="header-right-area">
-                <div id="header-title">シフトエディタ</div>
-                <div id="header-store-info"></div>
-                <div id="header-menu-container" style="position: relative;">
-                    <div id="header-menu-btn">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div id="floating-control-area">
         <div id="control-panel">
@@ -2414,6 +2400,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            let currentRole = 'スタッフ';
             try {
                 await liff.init({ liffId: CONFIG.LIFF_ID });
                 if (!liff.isLoggedIn()) {
@@ -2422,9 +2409,22 @@
                 }
                 const profile = await liff.getProfile();
                 window.currentUserId = profile.userId;
+
+                // 権限チェック (APIがここにないため仮判定)
+                Components.renderHeader('common-header-container', {
+                    title: 'シフトエディタ',
+                    userName: profile.displayName,
+                    userRole: currentRole
+                });
             } catch (err) {
                 console.error("LIFF SDK Init failed", err);
+                Components.renderHeader('common-header-container', {
+                    title: 'シフトエディタ',
+                    userName: 'ユーザー',
+                    userRole: currentRole
+                });
             }
+            Components.renderFooter('common-footer-container');
 
             await loadAppData();
             if (!APP_DATA.shifts) return;

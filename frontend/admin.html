@@ -5,9 +5,10 @@
     <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>店舗管理 - シフト管理Bot</title>
+    <title>店舗管理</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
+    <script src="./components.js"></script>
     <link rel="stylesheet" href="./style.css">
     <style>
         :root {
@@ -16,35 +17,6 @@
 
         body {
             background: #f0f2f5;
-        }
-
-        /* ===== Header ===== */
-        .header {
-            background: #fff;
-            border-bottom: 1px solid #eee;
-            padding: 16px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header h1 {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .header-sub {
-            font-size: 13px;
-            color: #888;
-            margin-top: 2px;
         }
 
         /* ===== Tabs ===== */
@@ -488,15 +460,7 @@
 
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="header-inner">
-            <div>
-                <h1>🏪 店舗管理</h1>
-                <div class="header-sub" id="managerNameDisplay">責任者: 読み込み中...</div>
-            </div>
-        </div>
-    </div>
+    <div id="common-header-container"></div>
 
     <!-- Tabs -->
     <div class="tabs" id="tabs">
@@ -594,6 +558,8 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <div id="common-footer-container"></div>
+
     <script>
         // ===== グローバル変数 =====
         let currentUserId = '';
@@ -614,6 +580,8 @@
             } catch (err) {
                 console.error('LIFF init failed', err);
                 showToast('LIFFの初期化に失敗しました。', 'error');
+                Components.renderHeader('common-header-container', { title: '店舗管理', userName: 'エラー', userRole: '未設定' });
+                Components.renderFooter('common-footer-container');
             }
         };
 
@@ -633,13 +601,21 @@
                 managerName = data.managerName;
                 managedStores = data.managedStores;
 
-                document.getElementById('managerNameDisplay').textContent = `責任者: ${managerName}`;
+                Components.renderHeader('common-header-container', {
+                    title: '店舗管理',
+                    userName: managerName,
+                    userRole: '管理者'
+                });
+                Components.renderFooter('common-footer-container');
+
                 renderAdminUI();
                 hideLoading();
             } catch (e) {
                 console.error(e);
                 hideLoading();
                 showToast('データの取得に失敗しました。', 'error');
+                Components.renderHeader('common-header-container', { title: '店舗管理', userName: 'エラー', userRole: '未設定' });
+                Components.renderFooter('common-footer-container');
             }
         }
 

@@ -5,7 +5,7 @@
     <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ユーザー登録 - シフト管理Bot</title>
+    <title>ユーザー登録・編集</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -432,15 +432,12 @@
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
+    <script src="./components.js"></script>
 </head>
 
 <body>
+    <div id="common-header-container"></div>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>ユーザー登録</h1>
-            <p>シフト管理Bot</p>
-        </div>
 
         <!-- Form Area -->
         <div class="form-area" id="formArea">
@@ -547,6 +544,8 @@
             } catch (err) {
                 console.error('LIFF Initialization failed', err);
                 showError('LIFFの初期化に失敗しました。');
+                Components.renderHeader('common-header-container', { title: 'ユーザー登録', userName: 'エラー', userRole: '未設定' });
+                Components.renderFooter('common-footer-container');
             }
         };
 
@@ -570,11 +569,34 @@
                 }
 
                 document.getElementById('loadingOverlay').classList.remove('show');
+
+                // Render Header and Footer 
+                let currentRole = 'スタッフ';
+                if (data.userData && data.userData.isManager) {
+                    currentRole = '管理者';
+                }
+                liff.getProfile().then(profile => {
+                    Components.renderHeader('common-header-container', {
+                        title: 'ユーザー登録',
+                        userName: profile.displayName,
+                        userRole: currentRole
+                    });
+                }).catch(() => {
+                    Components.renderHeader('common-header-container', {
+                        title: 'ユーザー登録',
+                        userName: data.userData ? data.userData.name : 'ユーザー',
+                        userRole: currentRole
+                    });
+                });
+                Components.renderFooter('common-footer-container');
+
                 initializeForm(data.userData, data.userStores);
             } catch (error) {
                 console.error('Failed to fetch initial data:', error);
                 document.getElementById('loadingOverlay').classList.remove('show');
                 showError('データの取得に失敗しました。');
+                Components.renderHeader('common-header-container', { title: 'ユーザー登録', userName: 'エラー', userRole: '未設定' });
+                Components.renderFooter('common-footer-container');
             }
         }
 
