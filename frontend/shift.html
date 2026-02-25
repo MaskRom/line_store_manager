@@ -200,11 +200,22 @@
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
-    <script src="./components.js"></script>
 </head>
 
 <body>
-    <div id="common-header-container"></div>
+    <div class="common-header">
+        <div class="common-header-inner">
+            <div class="header-left">
+                <h1 class="header-title" id="pageTitle">シフト希望</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-name" id="userName">ユーザー</span>
+                    <span class="role-badge role-badge-default" id="userRole">未設定</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- コンテナ: データ取得後にJSで中身を描画 -->
     <div id="mainContainer">
@@ -226,11 +237,30 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <div id="common-footer-container"></div>
+    <div class="common-footer">
+        <div class="common-footer-inner">
+            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
+        </div>
+    </div>
 
     <script>
         let storesData = [];
         let userId = "";
+
+        function updateHeader(title, userName, userRole) {
+            const pageTitle = document.getElementById('pageTitle');
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            if (pageTitle) pageTitle.textContent = title;
+            if (userNameEl) userNameEl.textContent = userName;
+            if (userRoleEl) {
+                userRoleEl.textContent = userRole;
+                let badgeClass = 'role-badge-default';
+                if (userRole.includes('管理')) badgeClass = 'role-badge-admin';
+                else if (userRole.includes('スタッフ')) badgeClass = 'role-badge-staff';
+                userRoleEl.className = 'role-badge ' + badgeClass;
+            }
+        }
 
         function switchTab(index) {
             document.querySelectorAll('.tab-item').forEach((t, i) => {
@@ -252,6 +282,15 @@
         // イベント登録（DOMContentLoaded後）
         window.onload = async function () {
             try {
+                // ローカルファイルでの実行（file:///）かテスト環境の場合はLIFFをモック化
+                if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
+                    console.log('Running in local/mock mode, skipping LIFF init.');
+                    userId = 'U_dummy_local_user';
+                    updateHeader('シフト希望', 'ローカルユーザー', '管理者');
+                    await fetchShiftData(userId);
+                    return;
+                }
+
                 // Initialize LIFF
                 await liff.init({ liffId: CONFIG.LIFF_ID });
 
@@ -270,8 +309,7 @@
             } catch (err) {
                 console.error('LIFF Initialization failed', err);
                 showToast('LIFFの初期化に失敗しました。', 'error');
-                Components.renderHeader('common-header-container', { title: 'シフト希望', userName: 'エラー', userRole: '未設定' });
-                Components.renderFooter('common-footer-container');
+                updateHeader('シフト希望', 'エラー', '未設定');
             }
         };
 
@@ -289,27 +327,17 @@
                     currentRole = '管理者';
                 }
                 liff.getProfile().then(profile => {
-                    Components.renderHeader('common-header-container', {
-                        title: 'シフト希望',
-                        userName: profile.displayName,
-                        userRole: currentRole
-                    });
+                    updateHeader('シフト希望', profile.displayName, currentRole);
                 }).catch(() => {
-                    Components.renderHeader('common-header-container', {
-                        title: 'シフト希望',
-                        userName: data.userData ? data.userData.name : 'ユーザー',
-                        userRole: currentRole
-                    });
+                    updateHeader('シフト希望', data.userData ? data.userData.name : 'ユーザー', currentRole);
                 });
-                Components.renderFooter('common-footer-container');
 
                 renderUI();
             } catch (error) {
                 console.error('Failed to fetch shift data:', error);
                 document.getElementById('loadingOverlay').classList.remove('show');
                 showToast('データの取得に失敗しました。', 'error');
-                Components.renderHeader('common-header-container', { title: 'シフト希望', userName: 'エラー', userRole: '未設定' });
-                Components.renderFooter('common-footer-container');
+                updateHeader('シフト希望', 'エラー', '未設定');
             }
         }
 

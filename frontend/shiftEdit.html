@@ -11,7 +11,6 @@
         rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
-    <script src="./components.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" href="./style.css">
     <style>
@@ -1611,7 +1610,19 @@
 </head>
 
 <body>
-    <div id="common-header-container"></div>
+    <div class="common-header">
+        <div class="common-header-inner">
+            <div class="header-left">
+                <h1 class="header-title" id="pageTitle">シフトエディタ</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-name" id="userName">ユーザー</span>
+                    <span class="role-badge role-badge-default" id="userRole">未設定</span>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="json-modal" class="custom-modal">
         <div class="modal-header">
             <h3 class="modal-title">JSONデータ編集</h3>
@@ -2399,9 +2410,44 @@
             container.innerHTML = html;
         }
 
+        function updateHeader(title, userName, userRole) {
+            const pageTitle = document.getElementById('pageTitle');
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            if (pageTitle) pageTitle.textContent = title;
+            if (userNameEl) userNameEl.textContent = userName;
+            if (userRoleEl) {
+                userRoleEl.textContent = userRole;
+                let badgeClass = 'role-badge-default';
+                if (userRole.includes('管理')) badgeClass = 'role-badge-admin';
+                else if (userRole.includes('スタッフ')) badgeClass = 'role-badge-staff';
+                userRoleEl.className = 'role-badge ' + badgeClass;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             let currentRole = 'スタッフ';
             try {
+                // ローカルファイルでの実行（file:///）かテスト環境の場合はLIFFをモック化
+                if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
+                    console.log('Running in local/mock mode, skipping LIFF init.');
+                    window.currentUserId = 'U_dummy_local_user';
+                    updateHeader('シフトエディタ', 'ローカルユーザー', '管理者');
+                    await loadAppData();
+                    if (APP_DATA.shifts) {
+                        initStoreInfo();
+                        calcStaffHours();
+                        initUI();
+                        initModal();
+                        initJsonModal();
+                        initHighlightModal();
+                        initDateChangeModal();
+                        setupDelegatedEvents();
+                        initStatusMenu();
+                    }
+                    return;
+                }
+
                 await liff.init({ liffId: CONFIG.LIFF_ID });
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -2411,20 +2457,11 @@
                 window.currentUserId = profile.userId;
 
                 // 権限チェック (APIがここにないため仮判定)
-                Components.renderHeader('common-header-container', {
-                    title: 'シフトエディタ',
-                    userName: profile.displayName,
-                    userRole: currentRole
-                });
+                updateHeader('シフトエディタ', profile.displayName, currentRole);
             } catch (err) {
                 console.error("LIFF SDK Init failed", err);
-                Components.renderHeader('common-header-container', {
-                    title: 'シフトエディタ',
-                    userName: 'ユーザー',
-                    userRole: currentRole
-                });
+                updateHeader('シフトエディタ', 'ユーザー', currentRole);
             }
-            Components.renderFooter('common-footer-container');
 
             await loadAppData();
             if (!APP_DATA.shifts) return;
@@ -4283,7 +4320,11 @@
             });
         }
     </script>
-
+    <div class="common-footer">
+        <div class="common-footer-inner">
+            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
+        </div>
+    </div>
 </body>
 
 </html>

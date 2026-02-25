@@ -432,11 +432,22 @@
     </style>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
-    <script src="./components.js"></script>
 </head>
 
 <body>
-    <div id="common-header-container"></div>
+    <div class="common-header">
+        <div class="common-header-inner">
+            <div class="header-left">
+                <h1 class="header-title" id="pageTitle">ユーザー登録</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-name" id="userName">ユーザー</span>
+                    <span class="role-badge role-badge-default" id="userRole">未設定</span>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="container">
 
         <!-- Form Area -->
@@ -508,6 +519,13 @@
         <p style="color: #666; font-weight: 500;">登録しています...</p>
     </div>
 
+    <!-- Common Footer -->
+    <div class="common-footer">
+        <div class="common-footer-inner">
+            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
+        </div>
+    </div>
+
     <script>
         // =====================================================================
         // State
@@ -519,6 +537,21 @@
             registeredStoreIds: new Set() // 既に選択済みのstoreId
         };
 
+        function updateHeader(title, userName, userRole) {
+            const pageTitle = document.getElementById('pageTitle');
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            if (pageTitle) pageTitle.textContent = title;
+            if (userNameEl) userNameEl.textContent = userName;
+            if (userRoleEl) {
+                userRoleEl.textContent = userRole;
+                let badgeClass = 'role-badge-default';
+                if (userRole.includes('管理')) badgeClass = 'role-badge-admin';
+                else if (userRole.includes('スタッフ')) badgeClass = 'role-badge-staff';
+                userRoleEl.className = 'role-badge ' + badgeClass;
+            }
+        }
+
         // =====================================================================
         // Initialization
         // =====================================================================
@@ -526,6 +559,15 @@
             console.log('Current URL:', window.location.href);
 
             try {
+                // ローカルファイルでの実行（file:///）かテスト環境の場合はLIFFをモック化
+                if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
+                    console.log('Running in local/mock mode, skipping LIFF init.');
+                    state.userId = 'U_dummy_local_user';
+                    updateHeader('ユーザー登録', 'ローカルユーザー', '管理者');
+                    await fetchInitialData(state.userId);
+                    return;
+                }
+
                 // Initialize LIFF
                 await liff.init({ liffId: CONFIG.LIFF_ID });
 
@@ -544,8 +586,7 @@
             } catch (err) {
                 console.error('LIFF Initialization failed', err);
                 showError('LIFFの初期化に失敗しました。');
-                Components.renderHeader('common-header-container', { title: 'ユーザー登録', userName: 'エラー', userRole: '未設定' });
-                Components.renderFooter('common-footer-container');
+                updateHeader('ユーザー登録', 'エラー', '未設定');
             }
         };
 
@@ -576,27 +617,17 @@
                     currentRole = '管理者';
                 }
                 liff.getProfile().then(profile => {
-                    Components.renderHeader('common-header-container', {
-                        title: 'ユーザー登録',
-                        userName: profile.displayName,
-                        userRole: currentRole
-                    });
+                    updateHeader('ユーザー登録', profile.displayName, currentRole);
                 }).catch(() => {
-                    Components.renderHeader('common-header-container', {
-                        title: 'ユーザー登録',
-                        userName: data.userData ? data.userData.name : 'ユーザー',
-                        userRole: currentRole
-                    });
+                    updateHeader('ユーザー登録', data.userData ? data.userData.name : 'ユーザー', currentRole);
                 });
-                Components.renderFooter('common-footer-container');
 
                 initializeForm(data.userData, data.userStores);
             } catch (error) {
                 console.error('Failed to fetch initial data:', error);
                 document.getElementById('loadingOverlay').classList.remove('show');
                 showError('データの取得に失敗しました。');
-                Components.renderHeader('common-header-container', { title: 'ユーザー登録', userName: 'エラー', userRole: '未設定' });
-                Components.renderFooter('common-footer-container');
+                updateHeader('ユーザー登録', 'エラー', '未設定');
             }
         }
 

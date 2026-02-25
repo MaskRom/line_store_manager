@@ -51,8 +51,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Toast Notification */
@@ -82,4 +87,71 @@ body {
 
 .toast.error {
     background: #e53935;
+}
+
+/* Common Header / Footer */
+.common-header {
+    background-color: #ffffff;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.common-header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.role-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.role-badge-admin {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.role-badge-staff {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.role-badge-default {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+
+.common-footer {
+    padding: 24px 20px;
+    text-align: center;
+}
+
+.common-footer-inner p {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
 }
