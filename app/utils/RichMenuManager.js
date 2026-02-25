@@ -20,6 +20,7 @@ const RichMenuManager = {
         const actionStore = { type: "uri", uri: `${baseUrl}/store.html`, label: "店舗" };
         const actionShiftEdit = { type: "uri", uri: `${baseUrl}/shiftEdit.html`, label: "シフト" };
         const actionStoreManage = { type: "uri", uri: `${baseUrl}/storeManage.html`, label: "店舗追加・削除" };
+        const actionAllUser = { type: "uri", uri: `${baseUrl}/allUser.html`, label: "ユーザー管理" };
         const actionDev = { type: "uri", uri: `${baseUrl}/dev.html`, label: "開発者ページ" };
 
         return {
@@ -58,10 +59,11 @@ const RichMenuManager = {
                     { bounds: { x: 0, y: 0, width: 400, height: 405 }, action: actionEditInfo },
                     { bounds: { x: 400, y: 0, width: 400, height: 405 }, action: actionShiftHope },
                     { bounds: { x: 800, y: 0, width: 400, height: 405 }, action: actionShiftView },
-                    // Bottom row
-                    { bounds: { x: 0, y: 405, width: 400, height: 405 }, action: actionStore },
-                    { bounds: { x: 400, y: 405, width: 400, height: 405 }, action: actionShiftEdit },
-                    { bounds: { x: 800, y: 405, width: 400, height: 405 }, action: actionStoreManage }
+                    // Bottom row (4 buttons, width 300 each)
+                    { bounds: { x: 0, y: 405, width: 300, height: 405 }, action: actionStore },
+                    { bounds: { x: 300, y: 405, width: 300, height: 405 }, action: actionShiftEdit },
+                    { bounds: { x: 600, y: 405, width: 300, height: 405 }, action: actionStoreManage },
+                    { bounds: { x: 900, y: 405, width: 300, height: 405 }, action: actionAllUser }
                 ]
             },
             "5": {
@@ -199,7 +201,8 @@ const RichMenuManager = {
                                 "color": function (ctx) {
                                     var colors = {
                                         "ユーザー登録": "#4A86E8", "情報編集": "#4A86E8", "休み希望": "#57BB8A", "シフト確認": "#4A86E8",
-                                        "シフト": "#F6B26B", "店舗": "#E67C73", "店舗追加・削除": "#A64D79", "開発者ページ": "#333333"
+                                        "シフト": "#F6B26B", "店舗": "#E67C73", "店舗追加・削除": "#A64D79", "開発者ページ": "#333333",
+                                        "ユーザー管理": "#20B2AA"
                                     };
                                     return colors[ctx.chart.data.datasets[0].data[ctx.dataIndex].label] || "#333333";
                                 },
@@ -207,7 +210,8 @@ const RichMenuManager = {
                                 "formatter": function (v) {
                                     var icons = {
                                         "ユーザー登録": "\uf234", "情報編集": "\uf044", "休み希望": "\uf133", "シフト確認": "\uf002",
-                                        "シフト": "\uf017", "店舗": "\uf54f", "店舗追加・削除": "\uf015", "開発者ページ": "\uf121"
+                                        "シフト": "\uf017", "店舗": "\uf54f", "店舗追加・削除": "\uf015", "開発者ページ": "\uf121",
+                                        "ユーザー管理": "\uf0c0"
                                     };
                                     return icons[v.label] || "\uf059";
                                 },
@@ -224,7 +228,15 @@ const RichMenuManager = {
                             "pointRadius": 0,
                             "datalabels": {
                                 "color": "#333333",
-                                "font": { "size": height === 405 ? 32 : 26, "weight": "bold" },
+                                "font": {
+                                    "size": function (ctx) {
+                                        var label = ctx.chart.data.datasets[1].data[ctx.dataIndex].label;
+                                        // 4ボタンの列は幅が狭いため、文字サイズを少し小さくする
+                                        var isBottomRow4Buttons = height === 810 && ctx.dataIndex >= 3 && ctx.chart.data.datasets[1].data.length === 7;
+                                        return isBottomRow4Buttons ? 22 : (height === 405 ? 32 : 26);
+                                    },
+                                    "weight": "bold"
+                                },
                                 "formatter": function (v) { return v.label; },
                                 "align": "center",
                                 "anchor": "center"
