@@ -6,7 +6,7 @@
         "deploy:github": "git add . && git commit -m \"Update\" && git push origin main",
         "deploy:gas": "clasp push",
         "deploy:frontend": "echo \"Assuming GitHub Actions handles frontend deploy via deploy:github OR define custom action here\"",
-        "deploy:all": "npm run deploy:github && npm run deploy:gas"
+        "deploy:all": "npm run deploy:gas && npm run deploy:github"
     },
     "author": "",
     "license": "ISC"
