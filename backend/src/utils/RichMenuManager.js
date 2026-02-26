@@ -13,14 +13,14 @@ const RichMenuManager = {
         const baseUrl = baseUrlRaw.replace(/\/$/, '');
 
         // 共通アクションの定義
-        const actionRegister = { type: "uri", uri: `${baseUrl}/register.html`, label: "ユーザー登録" };
-        const actionEditInfo = { type: "uri", uri: `${baseUrl}/register.html`, label: "情報編集" };
-        const actionShiftHope = { type: "uri", uri: `${baseUrl}/shiftHope.html`, label: "休み希望" };
-        const actionShiftView = { type: "uri", uri: `${baseUrl}/shiftView.html`, label: "シフト確認" };
-        const actionStore = { type: "uri", uri: `${baseUrl}/store.html`, label: "店舗" };
-        const actionShiftEdit = { type: "uri", uri: `${baseUrl}/shiftEdit.html`, label: "シフト" };
-        const actionStoreManage = { type: "uri", uri: `${baseUrl}/storeManage.html`, label: "店舗追加・削除" };
-        const actionDev = { type: "uri", uri: `${baseUrl}/dev.html`, label: "開発者ページ" };
+        const actionRegister = { type: "uri", uri: `${baseUrl}/staff/register.html`, label: "ユーザー登録" };
+        const actionEditInfo = { type: "uri", uri: `${baseUrl}/staff/register.html`, label: "情報編集" };
+        const actionShiftHope = { type: "uri", uri: `${baseUrl}/staff/shiftHope.html`, label: "休み希望" };
+        const actionShiftView = { type: "uri", uri: `${baseUrl}/staff/shiftView.html`, label: "シフト確認" };
+        const actionStore = { type: "uri", uri: `${baseUrl}/manager/store.html`, label: "店舗" };
+        const actionShiftEdit = { type: "uri", uri: `${baseUrl}/manager/shiftEdit.html`, label: "シフト" };
+        const actionStoreManage = { type: "uri", uri: `${baseUrl}/admin/storeManage.html`, label: "店舗追加・削除" };
+        const actionDev = { type: "uri", uri: `${baseUrl}/dev/dev.html`, label: "開発者ページ" };
 
         return {
             "1": {

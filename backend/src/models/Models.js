@@ -129,6 +129,7 @@ class BaseModel {
                 }
 
                 sheet.appendRow(row);
+                SpreadsheetApp.flush(); // 強制的に書き込みを反映
 
                 // 文字列型カラムを数値変換から保護（appendRow後に書式と値を上書き）
                 if (strCols.length > 0) {
@@ -139,6 +140,7 @@ class BaseModel {
                             cell.setNumberFormat('@').setValue(String(data[key]));
                         }
                     }
+                    SpreadsheetApp.flush(); // 上書き後にも反映
                 }
 
                 return this.mapRow(row, sheet.getLastRow() - 1);
@@ -186,6 +188,8 @@ class UserData extends BaseModel {
             "role": 3
         };
     }
+
+    static get stringColumns() { return ["lineId"]; }
 
     static get headers() { return ["LINE ID", "本名", "SST", "権限"]; }
 

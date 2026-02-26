@@ -434,23 +434,12 @@
 </style>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="../config.js"></script>
+<script src="../components/Header.js"></script>
+<script src="../components/Footer.js"></script>
 </head>
 
 <body>
-    <div class="common-header">
-        <div class="common-header-inner">
-            <div class="header-left">
-                <a href="../index.html" class="header-back-btn"><i class="fas fa-chevron-left"></i></a>
-                <h1 class="header-title" id="pageTitle">ユーザー登録</h1>
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <span class="user-name" id="userName">ユーザー</span>
-                    <span class="role-badge role-badge-default" id="userRole">未設定</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <common-header title="ユーザー登録" back-url="../index.html"></common-header>
     <div class="container">
 
         <!-- Form Area -->
@@ -523,11 +512,7 @@
     </div>
 
     <!-- Common Footer -->
-    <div class="common-footer">
-        <div class="common-footer-inner">
-            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
-        </div>
-    </div>
+    <common-footer></common-footer>
 
     <script>
         // =====================================================================
@@ -540,30 +525,7 @@
             registeredStoreIds: new Set() // 既に選択済みのstoreId
         };
 
-        function updateHeader(title, userName, roleNum) {
-            const roleConfig = {
-                0: { name: "権限なし", colorClass: "role-badge-gray" },
-                1: { name: "仮登録", colorClass: "role-badge-gray" },
-                2: { name: "スタッフ", colorClass: "role-badge-green" },
-                3: { name: "責任者", colorClass: "role-badge-blue" },
-                4: { name: "管理者", colorClass: "role-badge-red" },
-                5: { name: "開発者", colorClass: "role-badge-black" }
-            };
-            const pageTitle = document.getElementById('pageTitle');
-            const userNameEl = document.getElementById('userName');
-            const userRoleEl = document.getElementById('userRole');
-            if (pageTitle) pageTitle.textContent = title;
-            if (userNameEl) userNameEl.textContent = userName;
-            if (userRoleEl) {
-                if (roleConfig[roleNum]) {
-                    userRoleEl.textContent = roleConfig[roleNum].name;
-                    userRoleEl.className = 'role-badge ' + roleConfig[roleNum].colorClass;
-                } else {
-                    userRoleEl.textContent = '未設定';
-                    userRoleEl.className = 'role-badge role-badge-gray';
-                }
-            }
-        }
+
 
         // =====================================================================
         // Initialization

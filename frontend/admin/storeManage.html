@@ -8,6 +8,8 @@
     <title>店舗追加・削除</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="../config.js"></script>
+    <script src="../components/Header.js"></script>
+    <script src="../components/Footer.js"></script>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -36,20 +38,7 @@
 </head>
 
 <body>
-    <div class="common-header">
-        <div class="common-header-inner">
-            <div class="header-left">
-                <a href="../index.html" class="header-back-btn"><i class="fas fa-chevron-left"></i></a>
-                <h1 class="header-title" id="pageTitle">店舗追加・削除</h1>
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <span class="user-name" id="userName">ユーザー</span>
-                    <span class="role-badge role-badge-default" id="userRole">未設定</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <common-header title="店舗追加・削除" back-url="../index.html"></common-header>
 
     <div class="main-col">
         <div class="card">
@@ -58,27 +47,19 @@
         </div>
     </div>
 
-    <div class="common-footer">
-        <div class="common-footer-inner">
-            <p>&copy; 2026 Shift Management System. All rights reserved.</p>
-        </div>
-    </div>
+    <common-footer></common-footer>
 
     <script>
         window.onload = async function () {
             try {
                 if (window.location.protocol === 'file:' || CONFIG.LIFF_ID === "AUTO_GENERATED_BY_GITHUB_ACTIONS") {
-                    document.getElementById('userName').textContent = 'ローカルユーザー';
-                    document.getElementById('userRole').textContent = '管理者';
-                    document.getElementById('userRole').className = 'role-badge role-badge-admin';
+                    window.updateHeader('店舗追加・削除', 'ローカルユーザー', 4);
                     return;
                 }
                 await liff.init({ liffId: CONFIG.LIFF_ID });
                 if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
-                document.getElementById('userName').textContent = profile.displayName;
-                document.getElementById('userRole').textContent = '管理者';
-                document.getElementById('userRole').className = 'role-badge role-badge-admin';
+                window.updateHeader('店舗追加・削除', profile.displayName, 4);
             } catch (e) {
                 console.error(e);
             }

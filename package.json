@@ -1,0 +1,13 @@
+{
+    "name": "shift-management-system",
+    "version": "1.0.0",
+    "description": "Store operations and shift management system",
+    "scripts": {
+        "deploy:github": "git add . && git commit -m \"Update\" && git push origin main",
+        "deploy:gas": "clasp push",
+        "deploy:frontend": "echo \"Assuming GitHub Actions handles frontend deploy via deploy:github OR define custom action here\"",
+        "deploy:all": "npm run deploy:github && npm run deploy:gas"
+    },
+    "author": "",
+    "license": "ISC"
+}
